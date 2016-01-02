@@ -125,18 +125,6 @@ function OpenBCIFactory() {
     };
 
     /**
-     * Purpose: Sends a soft reset command to the board
-     * @returns {Promise}
-     * Note: The softReset command MUST be sent to the board before you can start
-     *           streaming.
-     * Author: AJ Keller (@pushtheworldllc)
-     */
-    OpenBCIBoard.prototype.softReset = function() {
-        var self = this;
-        return writeAndDrain(self.serial, k.OBCIMiscSoftReset);
-    };
-
-    /**
      * Purpose: Stops the stream and closes the serial port
      * @returns {Promise}
      * Author: AJ Keller (@pushtheworldllc)
@@ -150,6 +138,59 @@ function OpenBCIFactory() {
             });
         });
         return closingPromise;
+    };
+
+
+    /**
+     * Purpose: Send a stop streaming command to the board.
+     * @returns {Promise} indicating if the signal was able to be sent.
+     * Note: You must have successfully connected to an OpenBCI board using the connect
+     *           method. Just because the signal was able to be sent to the board, does not
+     *           mean the board will start streaming.
+     * Author: AJ Keller (@pushtheworldllc)
+     */
+    OpenBCIBoard.prototype.streamStart = function() {
+        var self = this;
+        self.streaming = true;
+        return writeAndDrain(self.serial, k.OBCIStreamStart);
+    };
+
+    /**
+     * Purpose: Send a stop streaming command to the board.
+     * @returns {Promise} indicating if the signal was able to be sent.
+     * Note: You must have successfully connected to an OpenBCI board using the connect
+     *           method. Just because the signal was able to be sent to the board, does not
+     *           mean the board stopped streaming.
+     * Author: AJ Keller (@pushtheworldllc)
+     */
+    OpenBCIBoard.prototype.streamStop = function() {
+        //var self = this;
+        this.streaming = false;
+        console.log('Serial: ' + this.serial + ' sending stop command of ' + k.OBCIStreamStop);
+        return writeAndDrain(this.serial,k.OBCIStreamStop);
+    };
+
+    /**
+     * Purpose: Sends a soft reset command to the board
+     * @returns {Promise}
+     * Note: The softReset command MUST be sent to the board before you can start
+     *           streaming.
+     * Author: AJ Keller (@pushtheworldllc)
+     */
+    OpenBCIBoard.prototype.softReset = function() {
+        return writeAndDrain(this.serial, k.OBCIMiscSoftReset);
+    };
+
+    /**
+     * Purpose: Send a command to the board to turn a specified channel off
+     * @param channelNumber
+     * @returns {Promise.<T>}
+     */
+    OpenBCIBoard.prototype.channelOff = function(channelNumber) {
+        var self = this;
+        return k.commandChannelOff(channelNumber).then(function(charCommand) {
+            return writeAndDrain(self.serial,charCommand);
+        });
     };
 
     /**
@@ -209,35 +250,6 @@ function OpenBCIFactory() {
                 reject('No simulator to stop!');
             }
         });
-    };
-
-    /**
-     * Purpose: Send a stop streaming command to the board.
-     * @returns {Promise} indicating if the signal was able to be sent.
-     * Note: You must have successfully connected to an OpenBCI board using the connect
-     *           method. Just because the signal was able to be sent to the board, does not
-     *           mean the board will start streaming.
-     * Author: AJ Keller (@pushtheworldllc)
-     */
-    OpenBCIBoard.prototype.streamStart = function() {
-        var self = this;
-        self.streaming = true;
-        return writeAndDrain(self.serial, k.OBCIStreamStart);
-    };
-
-    /**
-     * Purpose: Send a stop streaming command to the board.
-     * @returns {Promise} indicating if the signal was able to be sent.
-     * Note: You must have successfully connected to an OpenBCI board using the connect
-     *           method. Just because the signal was able to be sent to the board, does not
-     *           mean the board stopped streaming.
-     * Author: AJ Keller (@pushtheworldllc)
-     */
-    OpenBCIBoard.prototype.streamStop = function() {
-        //var self = this;
-        this.streaming = false;
-        console.log('Serial: ' + this.serial + ' sending stop command of ' + k.OBCIStreamStop);
-        return writeAndDrain(this.serial,k.OBCIStreamStop);
     };
 
     /**

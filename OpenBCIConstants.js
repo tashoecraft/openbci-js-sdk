@@ -175,6 +175,11 @@ module.exports = {
     OBCIChannelOff_14:kOBCIChannelOff_14,
     OBCIChannelOff_15:kOBCIChannelOff_15,
     OBCIChannelOff_16:kOBCIChannelOff_16,
+    /**
+     * Purpose: To get the proper command to turn a channel off
+     * @param channelNumber - A number (1-16) of the desired channel
+     * @returns {Promise}
+     */
     commandChannelOff: function(channelNumber) {
         return new Promise(function(resolve,reject) {
             switch (channelNumber) {
