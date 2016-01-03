@@ -118,8 +118,16 @@ const kOBCIStreamStart  = 'b';
 const kOBCIStreamStop   = 's';
 
 /** Miscellaneous */
-const kOBCIMiscQueryRegisterSettings    = '?';
-const kOBCIMiscSoftReset                = 'v';
+const kOBCIMiscQueryRegisterSettings            = '?';
+const kOBCIMiscQueryRegisterSettingsChannel1    = 'CH1SET';
+const kOBCIMiscQueryRegisterSettingsChannel2    = 'CH2SET';
+const kOBCIMiscQueryRegisterSettingsChannel3    = 'CH3SET';
+const kOBCIMiscQueryRegisterSettingsChannel4    = 'CH4SET';
+const kOBCIMiscQueryRegisterSettingsChannel5    = 'CH5SET';
+const kOBCIMiscQueryRegisterSettingsChannel6    = 'CH6SET';
+const kOBCIMiscQueryRegisterSettingsChannel7    = 'CH7SET';
+const kOBCIMiscQueryRegisterSettingsChannel8    = 'CH8SET';
+const kOBCIMiscSoftReset                        = 'v';
 
 /** 16 Channel Commands */
 const kOBCIChannelMaxNumber8    = 'c';
@@ -254,7 +262,62 @@ module.exports = {
     OBCIChannelOn_14:kOBCIChannelOn_14,
     OBCIChannelOn_15:kOBCIChannelOn_15,
     OBCIChannelOn_16:kOBCIChannelOn_16,
-    commandChannelOn: function(channelNumber,callback) {
+    commandChannelOn: function(channelNumber) {
+        return new Promise(function(resolve,reject) {
+            switch (channelNumber) {
+                case 1:
+                    resolve(kOBCIChannelOn_1);
+                    break;
+                case 2:
+                    resolve(kOBCIChannelOn_2);
+                    break;
+                case 3:
+                    resolve(kOBCIChannelOn_3);
+                    break;
+                case 4:
+                    resolve(kOBCIChannelOn_4);
+                    break;
+                case 5:
+                    resolve(kOBCIChannelOn_5);
+                    break;
+                case 6:
+                    resolve(kOBCIChannelOn_6);
+                    break;
+                case 7:
+                    resolve(kOBCIChannelOn_7);
+                    break;
+                case 8:
+                    resolve(kOBCIChannelOn_8);
+                    break;
+                case 9:
+                    resolve(kOBCIChannelOn_9);
+                    break;
+                case 10:
+                    resolve(kOBCIChannelOn_10);
+                    break;
+                case 11:
+                    resolve(kOBCIChannelOn_11);
+                    break;
+                case 12:
+                    resolve(kOBCIChannelOn_12);
+                    break;
+                case 13:
+                    resolve(kOBCIChannelOn_13);
+                    break;
+                case 14:
+                    resolve(kOBCIChannelOn_14);
+                    break;
+                case 15:
+                    resolve(kOBCIChannelOn_15);
+                    break;
+                case 16:
+                    resolve(kOBCIChannelOn_16);
+                    break;
+                default:
+                    reject('Error [commandChannelOn]: Invalid Channel Number');
+                    break;
+            }
+        });
         switch (channelNumber) {
             case 1:
                 return kOBCIChannelOn_1;
@@ -290,7 +353,7 @@ module.exports = {
                 return kOBCIChannelOn_16;
             default:
                 if(callback) {
-                    callback('Error [commandChannelOn]: Invalid Channel Number')
+                    callback()
                 }
                 return;
         }
@@ -409,6 +472,47 @@ module.exports = {
     OBCIStreamStop:kOBCIStreamStop,
     /** Miscellaneous */
     OBCIMiscQueryRegisterSettings:kOBCIMiscQueryRegisterSettings,
+    OBCIMiscQueryRegisterSettingsChannel1:kOBCIMiscQueryRegisterSettingsChannel1,
+    OBCIMiscQueryRegisterSettingsChannel2:kOBCIMiscQueryRegisterSettingsChannel2,
+    OBCIMiscQueryRegisterSettingsChannel3:kOBCIMiscQueryRegisterSettingsChannel3,
+    OBCIMiscQueryRegisterSettingsChannel4:kOBCIMiscQueryRegisterSettingsChannel4,
+    OBCIMiscQueryRegisterSettingsChannel5:kOBCIMiscQueryRegisterSettingsChannel5,
+    OBCIMiscQueryRegisterSettingsChannel6:kOBCIMiscQueryRegisterSettingsChannel6,
+    OBCIMiscQueryRegisterSettingsChannel7:kOBCIMiscQueryRegisterSettingsChannel7,
+    OBCIMiscQueryRegisterSettingsChannel8:kOBCIMiscQueryRegisterSettingsChannel8,
+    channelSettingsKeyForChannel: function(channelNumber) {
+        return new Promise(function(resolve,reject) {
+            switch (channelNumber) {
+                case 1:
+                    resolve(new Buffer(kOBCIMiscQueryRegisterSettingsChannel1));
+                    break;
+                case 2:
+                    resolve(new Buffer(kOBCIMiscQueryRegisterSettingsChannel2));
+                    break;
+                case 3:
+                    resolve(new Buffer(kOBCIMiscQueryRegisterSettingsChannel3));
+                    break;
+                case 4:
+                    resolve(new Buffer(kOBCIMiscQueryRegisterSettingsChannel4));
+                    break;
+                case 5:
+                    resolve(new Buffer(kOBCIMiscQueryRegisterSettingsChannel5));
+                    break;
+                case 6:
+                    resolve(new Buffer(kOBCIMiscQueryRegisterSettingsChannel6));
+                    break;
+                case 7:
+                    resolve(new Buffer(kOBCIMiscQueryRegisterSettingsChannel7));
+                    break;
+                case 8:
+                    resolve(new Buffer(kOBCIMiscQueryRegisterSettingsChannel8));
+                    break;
+                default:
+                    reject('Invalid channel number');
+                    break;
+            }
+        });
+    },
     OBCIMiscSoftReset:kOBCIMiscSoftReset,
     /** 16 Channel Commands */
     OBCIChannelMaxNumber8:kOBCIChannelMaxNumber8,

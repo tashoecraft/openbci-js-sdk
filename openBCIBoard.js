@@ -38,7 +38,7 @@ function OpenBCIFactory() {
 
         /** Properties (keep alphabetical) */
         // Bools
-        self.isLookingForMoney = true;
+        self.isLookingForKeyInBuffer = true;
         self.isSimulating = false;
         // Buffers
         self.masterBuffer = { // Buffer used to store bytes in and read packets from
@@ -50,6 +50,7 @@ function OpenBCIFactory() {
             looseBytes:0
         };
         self.moneyBuf = new Buffer('$$$');
+        self.searchingBuf = self.moneyBuf;
         // Numbers
         self.badPackets = 0;
         self.bytesIn = 0;
@@ -181,6 +182,23 @@ function OpenBCIFactory() {
         return writeAndDrain(this.serial, k.OBCIMiscSoftReset);
     };
 
+    OpenBCIBoard.prototype.getSettingsForChannel = function(channelNumber) {
+        var self = this;
+
+        return k.channelSettingsKeyForChannel(channelNumber).then(function(newSearchingBuffer) {
+            self.searchingBuf = newSearchingBuffer;
+            return self.printRegisterSettings();
+        });
+
+    };
+
+    OpenBCIBoard.prototype.printRegisterSettings = function() {
+        var self = this;
+        return writeAndDrain(self.serial, k.OBCIMiscQueryRegisterSettings).then(function() {
+            self.isLookingForKeyInBuffer = true; //need to wait for key in
+        });
+    };
+
     /**
      * Purpose: Send a command to the board to turn a specified channel off
      * @param channelNumber
@@ -189,6 +207,7 @@ function OpenBCIFactory() {
     OpenBCIBoard.prototype.channelOff = function(channelNumber) {
         var self = this;
         return k.commandChannelOff(channelNumber).then(function(charCommand) {
+            console.log('sent command to turn channel ' + channelNumber + ' by sending command ' + charCommand);
             return writeAndDrain(self.serial,charCommand);
         });
     };
@@ -298,13 +317,20 @@ function OpenBCIFactory() {
         var self = this;
         var sizeOfData = data.byteLength;
         self.bytesIn += sizeOfData; // increment to keep track of how many bytes we are receiving
-        if(self.isLookingForMoney) { //in a reset state
-            console.log(data);
-            for (var i = 0; i < sizeOfData - 2; i++) {
-                if (self.moneyBuf.equals(data.slice(i, i + 3))) {
-                    console.log('Money!');
-                    self.isLookingForMoney = false;
-                    self.emit('ready');
+        if(self.isLookingForKeyInBuffer) { //in a reset state
+            console.log(data.toString());
+            var sizeOfSearchBuf = self.searchingBuf.byteLength;
+            for (var i = 0; i < sizeOfData - (sizeOfSearchBuf - 1); i++) {
+                if (self.searchingBuf.equals(data.slice(i, i + sizeOfSearchBuf))) {
+                    if (self.searchingBuf.equals(self.moneyBuf)) {
+                        console.log('Money!');
+                        self.isLookingForKeyInBuffer = false;
+                        self.emit('ready');
+                    } else {
+                        console.log('Found register... changing search buffer')
+                        self.searchingBuf = self.moneyBuf;
+                        break;
+                    }
                 }
             }
         } else { //ready to open the serial fire hose
@@ -548,8 +574,6 @@ function writeAndDrain(boardSerial,data) {
         boardSerial.write(data,function(error,results) {
             if(results) {
                 boardSerial.drain(function() {
-                    //console.log('boardSerial in writeAndDrain: ');
-                    //console.log(JSON.stringify(boardSerial));
                     resolve(boardSerial);
                 });
             } else {
