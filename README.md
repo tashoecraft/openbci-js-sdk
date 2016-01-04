@@ -2,11 +2,11 @@
 [![Join the chat at https://gitter.im/OpenBCI/openbci-js-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OpenBCI/openbci-js-sdk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/OpenBCI/openbci-js-sdk.svg?branch=master)](https://travis-ci.org/OpenBCI/openbci-js-sdk)
 
-#openbci-sdk
+# openbci-sdk
 
 An NPM module for OpenBCI ~ written with love by Push The World
 
-##Working with the Module
+## Working with the Module
 
 Initialization
 --------------
@@ -73,9 +73,8 @@ ourBoard.streamStop().then(ourBoard.disconnect());
 To start the simulator test samples:
 ----------
 1. Call `.simulatorStart()`
-2. Install the 'ready' event emitter on resolved promise
-3. In callback for 'ready' emitter, call `streamStart()`
-4. Install the 'sample' event emitter
+2. In callback for 'ready' emitter, call `streamStart()`
+3. Install the 'sample' event emitter
 ```js
 var ourBoard = new require('openbci-sdk').OpenBCIBoard();
 ourBoard.simulatorStart().then(function() {
@@ -116,7 +115,7 @@ ourBoard.autoFindOpenBCIBoard(function(portName,ports) {
 ```
 
 
-##Dev Notes
+## Dev Notes
 Running
 -------
 1. Plug usb module into serial port
@@ -128,3 +127,34 @@ Testing
 ```
 npm test
 ```
+
+Reference Guide
+---------------
+## Methods
+
+### OpenBCIBoard (portName,options)
+
+Create new instance of an OpenBCI board on `portName`.
+
+**_portName (optional)_**
+
+The system path of the OpenBCI board serial port to open. For example, `/dev/tty` on Mac/Linux or `COM1` on Windows.
+
+**_options (optional)_**
+
+Board optional configurations.
+
+* `baudRate` Baud Rate, defaults to 115200. Manipulating this is allowed if firmware on board has been previously configured.
+* `daisy` Daisy chain board is connected to the OpenBCI board. (NOTE: THIS IS IN-OP AT THIS TIME DUE TO NO ACCESS TO ACCESSORY BOARD)
+
+**Note, we have added support for either all lowercase OR camelcase of the options, use whichever style you prefer.**
+
+### .connect()
+
+The essential precursor method to be called initially to establish a serial connection to the OpenBCI board.
+
+**_portName_**
+
+The system path of the OpenBCI board serial port to open. For example, `/dev/tty` on Mac/Linux or `COM1` on Windows.
+
+Returns a 

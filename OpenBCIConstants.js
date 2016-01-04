@@ -644,5 +644,111 @@ module.exports = {
     ErrorInvalidByteStop:kErrorInvalidByteStop,
     ErrorUndefinedOrNullInput:kErrorUndefinedOrNullInput,
     /** Max Master Buffer Size */
-    OBCIMasterBufferSize:kOBCIMasterBufferSize
+    OBCIMasterBufferSize:kOBCIMasterBufferSize,
+    /** Channel Setter Maker */
+    getChannelSetter:channelSetter
 };
+
+/**
+ * Purpose: To add a usability abstraction layer above channel setting commands. Due to the
+ *          extensive and highly specific nature of the channel setting command chain, this
+ *          will take several different human readable inputs and merge to one array filled
+ *          with the correct commands, prime for sending directly to the write command.
+ * @param channelNumber - Number (1-16)
+ * @param powerDown - Bool (true -> OFF, false -> ON (default))
+ *          turns the channel on or off
+ * @param gain - Number (1,2,4,6,8,12,24(default))
+ *          sets the gain for the channel
+ * @param inputType - String (normal,shorted,biasMethod,mvdd,temp,testsig,biasDrp,biasDrn)
+ *          selects the ADC channel input source
+ * @param bias - Bool (true -> Include in bias (default), false -> remove from bias)
+ *          selects to include the channel input in bias generation
+ * @param srb2 - Bool (true -> Connect this input to SRB2 (default),
+ *                     false -> Disconnect this input from SRB2)
+ *          Select to connect (true) this channel's P input to the SRB2 pin. This closes
+ *              a switch between P input and SRB2 for the given channel, and allows the
+ *              P input to also remain connected to the ADC.
+ * @param srb1 - Bool (true -> connect all N inputs to SRB1,
+ *                     false -> Disconnect all N inputs from SRB1 (default))
+ *          Select to connect (true) all channels' N inputs to SRB1. This effects all pins,
+ *              and disconnects all N inputs from the ADC.
+ * @returns {Promise} resolves array of commands to be sent, rejects on bad input or no board
+ */
+function channelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
+
+    // Used to store and assemble the commands
+    var cmdChannelNumber,
+        cmdPowerDown,
+        cmdGain,
+        cmdInputType,
+        cmdBias,
+        cmdSrb2,
+        cmdSrb1;
+
+    return new Promise(function(resolve,reject) {
+        // Validate the input
+        if (!isNumber(channelNumber)) { reject('channelNumber must be of type \'number\' '); }
+        if (!isBoolean(powerDown)) { reject('powerDown must be of type \'boolean\' '); }
+        if (!isNumber(gain)) { reject('gain must be of type \'number\' '); }
+        if (!isString(inputType)) { reject('inputType must be of type \'string\' '); }
+        if (!isBoolean(bias)) { reject('bias must be of type \'boolean\' '); }
+        if (!isBoolean(srb2)) { reject('srb1 must be of type \'boolean\' '); }
+        if (!isBoolean(srb1)) { reject('srb2 must be of type \'boolean\' '); }
+
+        // Set Channel Number
+        k.commandChannelForCmd(channelNumber).then(function(command) {
+            cmdChannelNumber = command;
+        },function(err) {
+            reject(err);
+        });
+
+        // Set POWER_DOWN
+        cmdPowerDown = powerDown ? kOBCIChannelCmdPowerOff : kOBCIChannelCmdPowerOn;
+
+        // Set Gain
+        k.commandForGain(gain).then(function(command) {
+            cmdGain = command;
+        },function(err) {
+            reject(err);
+        });
+
+        // Set ADC string
+        k.commandForADCString(inputType).then(function(command) {
+            cmdInputType = command;
+        },function(err) {
+            reject(err);
+        });
+
+        // Set BIAS
+        cmdBias = bias ? kOBCIChannelCmdBiasInclude : kOBCIChannelCmdBiasRemove;
+
+        // Set SRB2
+        cmdSrb2 = srb2 ? kOBCIChannelCmdSRB2Connect : kOBCIChannelCmdSRB2Diconnect;
+
+        // Set SRB1
+        cmdSrb1 = srb1 ? kOBCIChannelCmdSRB1Connect : kOBCIChannelCmdSRB1Diconnect;
+
+        resolve([
+            kOBCIChannelCmdSet,
+            cmdChannelNumber,
+            cmdPowerDown,
+            cmdGain,
+            cmdInputType,
+            cmdBias,
+            cmdSrb2,
+            cmdSrb1,
+            kOBCIChannelCmdLatch
+        ]);
+
+    });
+}
+
+function isNumber(input) {
+    return (typeof input === 'number');
+}
+function isBoolean(input) {
+    return (typeof input === 'boolean');
+}
+function isString(input) {
+    return (typeof input === 'string');
+}

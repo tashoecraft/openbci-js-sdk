@@ -18,22 +18,30 @@ function OpenBCIFactory() {
 
     /**
      * Purpose: The initialization method to call first, before any other method.
+     * @param portName (optional) - The system path of the OpenBCI board serial port to open.
+     *                      For example, `/dev/tty` on Mac/Linux or `COM1` on Windows.
+     * @param options (optional) - Board optional configurations.
+     *     - `baudRate` - Baud Rate, defaults to 115200. Manipulating this is allowed if
+     *                      firmware on board has been previously configured.
+     *     - `daisy` - Daisy chain board is connected to the OpenBCI board. (NOTE: THIS
+     *                      IS IN-OP AT THIS TIME DUE TO NO ACCESS TO ACCESSORY BOARD)
+     * @constructor
      * Author: AJ Keller (@pushtheworldllc)
      */
-    function OpenBCIBoard(portName,options,connectImmediately) {
+    function OpenBCIBoard(portName,options) {
         var self = this;
         //var args = Array.prototype.slice.call(arguments);
 
         options = (typeof options !== 'function') && options || {};
         var opts = {};
 
-        connectImmediately = (connectImmediately === undefined || connectImmediately === null) ? true : connectImmediately;
         stream.Stream.call(this);
 
         /** Configuring Options */
         opts.baudRate = options.baudRate || options.baudrate || _options.baudrate;
         opts.daisy = options.daisy || options.daisy || _options.daisy;
-        opts.simulate = options.simulate || options.simulate || _options.simulate;
+        // TODO: Add ability to start simulator with options
+        //opts.simulate = options.simulate || options.simulate || _options.simulate;
         self.options = opts;
 
         /** Properties (keep alphabetical) */
@@ -63,17 +71,6 @@ function OpenBCIFactory() {
         self.portName = portName;
 
         //TODO: Add connect immediately functionality, suggest this to be the default...
-        if(connectImmediately) {
-            /** Step 1:  Instaniate serialport */
-
-            /** Step 2:  Wait for 'open' event on serialport */
-
-            /** Step 3:  Send a soft reset */
-
-            /** Step 4:  Wait for a '$$$' on buffer */
-
-        }
-
     }
 
     // This allows us to use the emitter class freely outside of the module
@@ -186,38 +183,41 @@ function OpenBCIFactory() {
     OpenBCIBoard.prototype.write = function(dataToWrite) {
         var self = this;
 
-        var writerFunc = setInterval(function() {
+        function writerFunction() {
             if (self.commandsToWrite > 0) {
                 var command = self.writeOutArray.shift();
                 self.commandsToWrite--;
-                console.log('Wrote: ' + command);
+                console.log('Wrote: ' + command + ' we have ' + self.commandsToWrite + ' left to write');
+                if (self.commandsToWrite === 0) {
+                    console.log('Finished writing');
+                } else {
+                    self.writer = setTimeout(writerFunction,500);
+                }
                 writeAndDrain(self.serial,command);
-            } else {
-                console.log('Finished writing');
-                clearInterval(writerFunc);
             }
-        },10); //should be ten in production
+        }
 
         return new Promise(function(resolve,reject) {
             if (self.serial === null || self.serial === undefined) {
                 reject('Serial port not configured');
             } else {
-                console.log(dataToWrite);
                 if (Array.isArray(dataToWrite)) { // Got an input array
                     var len = dataToWrite.length;
-                    console.log('Length of array in write: ' + len);
+                    //console.log('Length of array in write: ' + len);
                     for (var i = 0; i < len; i++) {
                         self.writeOutArray[self.commandsToWrite] = dataToWrite[i];
                         self.commandsToWrite++;
                     }
                 } else {
+                    //console.log('not array');
                     self.writeOutArray[self.commandsToWrite] = dataToWrite;
                     self.commandsToWrite++;
                 }
-                if(self.writer === null) { //there is no writer started
-                    self.writer = writerFunc;
+                if(self.writer === null || self.writer === undefined) { //there is no writer started
+                    //console.log('starting writer');
+                    self.writer = setTimeout(writerFunction,0);
                 }
-                resolve(self.writer);
+                resolve();
             }
         });
     };
@@ -310,14 +310,14 @@ function OpenBCIFactory() {
      * @returns {Promise} resolves if sent, rejects on bad input or no board
      */
     OpenBCIBoard.prototype.channelSet = function(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
-
+        var self = this;
         var arrayOfCommands = [];
         getChannelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1).then(function(arr) {
             arrayOfCommands = arr;
+            self.write(arrayOfCommands);
         }, function(err) {
             return Promise.reject(err);
         });
-
     };
 
 
@@ -716,6 +716,13 @@ function writeAndDrain(boardSerial,data) {
     });
 }
 
+/**
+ * Purpose: To parse a given channel given output from a print registers query
+ * @param rawChannelBuffer
+ *          An example would be 'CH1SET 0x05, 0xFF, 1, 0, 0, 0, 0, 1, 0
+ * @returns {Promise}
+ * Author: AJ Keller (@pushtheworldllc)
+ */
 function getChannelSettingsObj(rawChannelBuffer) {
     return new Promise(function(resolve,reject) {
         if (rawChannelBuffer === undefined || rawChannelBuffer === null) {
@@ -735,10 +742,6 @@ function getChannelSettingsObj(rawChannelBuffer) {
         var bitsToSkip = 20; //CH1SET, 0x05, 0xE0 --> 20 bits
         var sizeOfData = rawChannelBuffer.byteLength;
 
-        //if(sizeOfData < bitsToSkip) {
-        //    reject('Channel buffer is smaller than the number of bytes we need to skip')
-        //}
-
         var objIndex = 0;
         for(var j = bitsToSkip; j < sizeOfData - 1;j+=3) { //every three bytes there is data
             switch (objIndex) {
@@ -750,109 +753,7 @@ function getChannelSettingsObj(rawChannelBuffer) {
             }
 
             objIndex++;
-            //console.log(j + ': ' + data.slice(j,j+1).toString());
         }
         resolve(channelSettingsObject);
     });
-}
-
-/**
- *
- * @param channelNumber - Number (1-16)
- * @param powerDown - Bool (true -> OFF, false -> ON (default))
- *          turns the channel on or off
- * @param gain - Number (1,2,4,6,8,12,24(default))
- *          sets the gain for the channel
- * @param inputType - String (normal,shorted,biasMethod,mvdd,temp,testsig,biasDrp,biasDrn)
- *          selects the ADC channel input source
- * @param bias - Bool (true -> Include in bias (default), false -> remove from bias)
- *          selects to include the channel input in bias generation
- * @param srb2 - Bool (true -> Connect this input to SRB2 (default),
- *                     false -> Disconnect this input from SRB2)
- *          Select to connect (true) this channel's P input to the SRB2 pin. This closes
- *              a switch between P input and SRB2 for the given channel, and allows the
- *              P input to also remain connected to the ADC.
- * @param srb1 - Bool (true -> connect all N inputs to SRB1,
- *                     false -> Disconnect all N inputs from SRB1 (default))
- *          Select to connect (true) all channels' N inputs to SRB1. This effects all pins,
- *              and disconnects all N inputs from the ADC.
- * @returns {Promise} resolves array of commands to be sent, rejects on bad input or no board
- */
-function getChannelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
-
-    // Used to store and assemble the commands
-    var cmdChannelNumber,
-        cmdPowerDown,
-        cmdGain,
-        cmdInputType,
-        cmdBias,
-        cmdSrb2,
-        cmdSrb1;
-
-    return new Promise(function(resolve,reject) {
-        // Validate the input
-        if (!isNumber(channelNumber)) { reject('channelNumber must be of type \'number\' '); }
-        if (!isBoolean(powerDown)) { reject('powerDown must be of type \'boolean\' '); }
-        if (!isNumber(gain)) { reject('gain must be of type \'number\' '); }
-        if (!isString(inputType)) { reject('inputType must be of type \'string\' '); }
-        if (!isBoolean(bias)) { reject('bias must be of type \'boolean\' '); }
-        if (!isBoolean(srb2)) { reject('srb1 must be of type \'boolean\' '); }
-        if (!isBoolean(srb1)) { reject('srb2 must be of type \'boolean\' '); }
-
-        // Set Channel Number
-        k.commandChannelForCmd(channelNumber).then(function(command) {
-            cmdChannelNumber = command;
-        },function(err) {
-            reject(err);
-        });
-
-        // Set POWER_DOWN
-        cmdPowerDown = powerDown ? k.OBCIChannelCmdPowerOff : k.OBCIChannelCmdPowerOn;
-
-        // Set Gain
-        k.commandForGain(gain).then(function(command) {
-            cmdGain = command;
-        },function(err) {
-            reject(err);
-        });
-
-        // Set ADC string
-        k.commandForADCString(inputType).then(function(command) {
-            cmdInputType = command;
-        },function(err) {
-            reject(err);
-        });
-
-        // Set BIAS
-        cmdBias = bias ? k.OBCIChannelCmdBiasInclude : k.OBCIChannelCmdBiasRemove;
-
-        // Set SRB2
-        cmdSrb2 = srb2 ? k.OBCIChannelCmdSRB2Connect : k.OBCIChannelCmdSRB2Diconnect;
-
-        // Set SRB1
-        cmdSrb1 = srb1 ? k.OBCIChannelCmdSRB1Connect : k.OBCIChannelCmdSRB1Diconnect;
-
-        resolve([
-            k.OBCIChannelCmdSet,
-            cmdChannelNumber,
-            cmdPowerDown,
-            cmdGain,
-            cmdInputType,
-            cmdBias,
-            cmdSrb2,
-            cmdSrb1,
-            k.OBCIChannelCmdLatch
-        ]);
-
-    });
-}
-
-function isNumber(input) {
-    return (typeof input === 'number');
-}
-function isBoolean(input) {
-    return (typeof input === 'boolean');
-}
-function isString(input) {
-    return (typeof input === 'string');
 }

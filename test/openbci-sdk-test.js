@@ -185,50 +185,54 @@ describe('openbci-sdk',function() {
             expect(running).equals(true);
         });
     });
-    xdescribe('write with different calls', function() {
-        this.timeout(10000);
-        //var running = false;
-        var ourBoard = new openBCIBoard.OpenBCIBoard();
-        //console.log(ourBoard.writeAndDrain.toString());
-        ourBoard.serial = 'taco';
-        //var sandbox = sinon.sandbox.create();//(ourBoard.writeAndDrain);
-        var mock = sinon.mock(ourBoard);
-        console.log(JSON.stringify(mock));
-
-        ourBoard.write('1');
-        ourBoard.write('2');
-        beforeEach(function(done) {
-            setTimeout(function() {
-                done();
-            },40);
-        });
-        afterEach(function() {
-            mock.restore();
-        });
-        it('should send command to writeAndDrain three times', function() {
-            //console.log(JSON.stringify(ourBoard));
-            expect(ourBoard.calledThrice);
-            //expect(running).equals(true);
-        });
-    });
+    //xdescribe('write with different calls', function() {
+    //    this.timeout(10000);
+    //    //var running = false;
+    //    var ourBoard = new openBCIBoard.OpenBCIBoard();
+    //    //console.log(ourBoard.writeAndDrain.toString());
+    //    ourBoard.serial = 'taco';
+    //    //var sandbox = sinon.sandbox.create();//(ourBoard.writeAndDrain);
+    //    var mock = sinon.mock(ourBoard);
+    //    //console.log(JSON.stringify(mock));
+    //
+    //    ourBoard.write('1');
+    //    ourBoard.write('2');
+    //    beforeEach(function(done) {
+    //        setTimeout(function() {
+    //            done();
+    //        },40);
+    //    });
+    //    afterEach(function() {
+    //        mock.restore();
+    //    });
+    //    it('should send command to writeAndDrain three times', function() {
+    //        //console.log(JSON.stringify(ourBoard));
+    //        expect(ourBoard.calledThrice);
+    //        //expect(running).equals(true);
+    //    });
+    //});
     describe('write with array', function() {
         this.timeout(10000);
         var running = false;
         var ourBoard = new openBCIBoard.OpenBCIBoard();
-        //console.log(ourBoard.writeAndDrain.toString());
+
         ourBoard.serial = 'taco';
-        //var sandbox = sinon.sandbox.create();//(ourBoard.writeAndDrain);
 
         ourBoard.write(['1','2','3']);
+        ourBoard.write('4');
+        ourBoard.write('5');
+        ourBoard.write('6');
+        ourBoard.write('7');
+        ourBoard.write('8');
+        ourBoard.write(['9','10','11']);
+
         beforeEach(function(done) {
             setTimeout(function() {
                 running = true;
                 done();
-            },400);
+            },8000);
         });
         it('should send command to writeAndDrain three times', function() {
-            //console.log(JSON.stringify(ourBoard));
-            //expect(ourBoard.calledThrice);
             expect(running).equals(true);
         });
     });

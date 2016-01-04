@@ -632,4 +632,7 @@ describe('OpenBCIConstants', function() {
             assert.equal(250, k.OBCISampleRate250);
         });
     });
+    describe('#channelSetter', function() {
+
+    });
 });
