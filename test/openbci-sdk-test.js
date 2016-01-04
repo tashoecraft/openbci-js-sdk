@@ -185,7 +185,7 @@ describe('openbci-sdk',function() {
             expect(running).equals(true);
         });
     });
-    xdescribe('#write', function() {
+    xdescribe('write with different calls', function() {
         this.timeout(10000);
         //var running = false;
         var ourBoard = new openBCIBoard.OpenBCIBoard();
@@ -209,6 +209,27 @@ describe('openbci-sdk',function() {
             //console.log(JSON.stringify(ourBoard));
             expect(ourBoard.calledThrice);
             //expect(running).equals(true);
+        });
+    });
+    describe('write with array', function() {
+        this.timeout(10000);
+        var running = false;
+        var ourBoard = new openBCIBoard.OpenBCIBoard();
+        //console.log(ourBoard.writeAndDrain.toString());
+        ourBoard.serial = 'taco';
+        //var sandbox = sinon.sandbox.create();//(ourBoard.writeAndDrain);
+
+        ourBoard.write(['1','2','3']);
+        beforeEach(function(done) {
+            setTimeout(function() {
+                running = true;
+                done();
+            },400);
+        });
+        it('should send command to writeAndDrain three times', function() {
+            //console.log(JSON.stringify(ourBoard));
+            //expect(ourBoard.calledThrice);
+            expect(running).equals(true);
         });
     });
 

@@ -357,62 +357,88 @@ describe('OpenBCIConstants', function() {
     });
     describe('should return the right command for each channel', function(){
         it('Channel 1', function() {
-            assert.equal('1', k.commandChannelForCmd(1));
+            var expectation = '1';
+            var result = k.commandChannelForCmd(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 2', function() {
-            assert.equal('2', k.commandChannelForCmd(2));
+            var expectation = '2';
+            var result = k.commandChannelForCmd(2);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 3', function() {
-            assert.equal('3', k.commandChannelForCmd(3));
+            var expectation = '3';
+            var result = k.commandChannelForCmd(3);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 4', function() {
-            assert.equal('4', k.commandChannelForCmd(4));
+            var expectation = '4';
+            var result = k.commandChannelForCmd(4);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 5', function() {
-            assert.equal('5', k.commandChannelForCmd(5));
+            var expectation = '5';
+            var result = k.commandChannelForCmd(5);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 6', function() {
-            assert.equal('6', k.commandChannelForCmd(6));
+            var expectation = '6';
+            var result = k.commandChannelForCmd(6);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 7', function() {
-            assert.equal('7', k.commandChannelForCmd(7));
+            var expectation = '7';
+            var result = k.commandChannelForCmd(7);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 8', function() {
-            assert.equal('8', k.commandChannelForCmd(8));
+            var expectation = '8';
+            var result = k.commandChannelForCmd(8);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 9', function() {
-            assert.equal('Q', k.commandChannelForCmd(9));
+            var expectation = 'Q';
+            var result = k.commandChannelForCmd(9);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 10', function() {
-            assert.equal('W', k.commandChannelForCmd(10));
+            var expectation = 'W';
+            var result = k.commandChannelForCmd(10);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 11', function() {
-            assert.equal('E', k.commandChannelForCmd(11));
+            var expectation = 'E';
+            var result = k.commandChannelForCmd(11);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 12', function() {
-            assert.equal('R', k.commandChannelForCmd(12));
+            var expectation = 'R';
+            var result = k.commandChannelForCmd(12);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 13', function() {
-            assert.equal('T', k.commandChannelForCmd(13));
+            var expectation = 'T';
+            var result = k.commandChannelForCmd(13);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 14', function() {
-            assert.equal('Y', k.commandChannelForCmd(14));
+            var expectation = 'Y';
+            var result = k.commandChannelForCmd(14);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 15', function() {
-            assert.equal('U', k.commandChannelForCmd(15));
+            var expectation = 'U';
+            var result = k.commandChannelForCmd(15);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 16', function() {
-            assert.equal('I', k.commandChannelForCmd(16));
+            var expectation = 'I';
+            var result = k.commandChannelForCmd(16);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Invalid channel request', function() {
-            k.commandChannelForCmd(17, function(error) {
-                assert(error);
-            });
-        });
-        it('Nothing is called back when valid channel', function() {
-            k.commandChannelForCmd(1, function(error) {
-                assert(error, null);
-            });
+            var result = k.commandChannelForCmd(17);
+            return expect(result).to.be.rejected;
         });
     });
     describe('should return correct channel off command for number', function(){

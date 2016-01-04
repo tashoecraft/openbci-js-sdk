@@ -202,11 +202,18 @@ function OpenBCIFactory() {
             if (self.serial === null || self.serial === undefined) {
                 reject('Serial port not configured');
             } else {
-                //if (dataToWrite.isArray) {
-
+                console.log(dataToWrite);
+                if (Array.isArray(dataToWrite)) { // Got an input array
+                    var len = dataToWrite.length;
+                    console.log('Length of array in write: ' + len);
+                    for (var i = 0; i < len; i++) {
+                        self.writeOutArray[self.commandsToWrite] = dataToWrite[i];
+                        self.commandsToWrite++;
+                    }
+                } else {
+                    self.writeOutArray[self.commandsToWrite] = dataToWrite;
+                    self.commandsToWrite++;
                 }
-                self.writeOutArray[self.commandsToWrite] = dataToWrite;
-                self.commandsToWrite++;
                 if(self.writer === null) { //there is no writer started
                     self.writer = writerFunc;
                 }
