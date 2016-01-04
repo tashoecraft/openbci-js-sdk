@@ -37,6 +37,8 @@ function OpenBCIFactory() {
         self.options = opts;
 
         /** Properties (keep alphabetical) */
+        // Arrays
+        self.writeOutArray = new Array(50);
         // Bools
         self.isLookingForKeyInBuffer = true;
         self.isSimulating = false;
@@ -51,9 +53,12 @@ function OpenBCIFactory() {
         };
         self.moneyBuf = new Buffer('$$$');
         self.searchingBuf = self.moneyBuf;
+        // Objects
+        self.writer = null;
         // Numbers
         self.badPackets = 0;
         self.bytesIn = 0;
+        self.commandsToWrite = 0;
         // Strings
         self.portName = portName;
 
@@ -95,7 +100,7 @@ function OpenBCIFactory() {
                 return Promise.reject(err);
             });
             self.serial = boardSerial;
-            console.log('Serial port connected');
+            //console.log('Serial port connected');
 
             //console.log('0');
             boardSerial.on('data',function(data) {
@@ -103,16 +108,16 @@ function OpenBCIFactory() {
             });
             self.connected = true;
             boardSerial.on('open',function() {
-                console.log('Serial port open!');
+                //console.log('Serial port open!');
                 setTimeout(function() {
-                    console.log('Sending stop command, in case the device was left streaming...');
-                    writeAndDrain(boardSerial, k.OBCIStreamStop);
+                    //console.log('Sending stop command, in case the device was left streaming...');
+                    self.write(k.OBCIStreamStop);
                     boardSerial.flush();
                 },300);
                 setTimeout(function() {
-                    console.log('Sending soft reset');
-                    Promise.resolve(writeAndDrain(boardSerial, k.OBCIMiscSoftReset));
-                    console.log("Waiting for '$$$'");
+                    //console.log('Sending soft reset');
+                    Promise.resolve(self.write(k.OBCIMiscSoftReset));
+                    //console.log("Waiting for '$$$'");
                 },750);
                 resolve(boardSerial);
             });
@@ -135,6 +140,7 @@ function OpenBCIFactory() {
         var closingPromise = new Promise(function(resolve, reject) {
             if(self.connected === false) { reject(Error('No open serial connection')); }
             self.serial.close(function() {
+                self.isLookingForKeyInBuffer = true;
                 resolve('Closed the serial connection!');
             });
         });
@@ -153,7 +159,7 @@ function OpenBCIFactory() {
     OpenBCIBoard.prototype.streamStart = function() {
         var self = this;
         self.streaming = true;
-        return writeAndDrain(self.serial, k.OBCIStreamStart);
+        return self.write(k.OBCIStreamStart);
     };
 
     /**
@@ -165,11 +171,51 @@ function OpenBCIFactory() {
      * Author: AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype.streamStop = function() {
-        //var self = this;
-        this.streaming = false;
-        console.log('Serial: ' + this.serial + ' sending stop command of ' + k.OBCIStreamStop);
-        return writeAndDrain(this.serial,k.OBCIStreamStop);
+        var self = this;
+        self.streaming = false;
+        //console.log('Serial: ' + this.serial + ' sending stop command of ' + k.OBCIStreamStop);
+        return self.write(k.OBCIStreamStop);
     };
+
+    /**
+     * Purpose: To be able to easily write to the board but ensure that we never send a commands
+     *              with less than a 10ms spacing between sends. This uses an array and pops off
+     *              the entries untill there are none left.
+     * Author: AJ Keller (@pushtheworldllc)
+     */
+    OpenBCIBoard.prototype.write = function(dataToWrite) {
+        var self = this;
+
+        var writerFunc = setInterval(function() {
+            if (self.commandsToWrite > 0) {
+                var command = self.writeOutArray.shift();
+                self.commandsToWrite--;
+                console.log('Wrote: ' + command);
+                writeAndDrain(self.serial,command);
+            } else {
+                console.log('Finished writing');
+                clearInterval(writerFunc);
+            }
+        },10); //should be ten in production
+
+        return new Promise(function(resolve,reject) {
+            if (self.serial === null || self.serial === undefined) {
+                reject('Serial port not configured');
+            } else {
+                //if (dataToWrite.isArray) {
+
+                }
+                self.writeOutArray[self.commandsToWrite] = dataToWrite;
+                self.commandsToWrite++;
+                if(self.writer === null) { //there is no writer started
+                    self.writer = writerFunc;
+                }
+                resolve(self.writer);
+            }
+        });
+    };
+
+
 
     /**
      * Purpose: Sends a soft reset command to the board
@@ -179,9 +225,14 @@ function OpenBCIFactory() {
      * Author: AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype.softReset = function() {
-        return writeAndDrain(this.serial, k.OBCIMiscSoftReset);
+        return self.write(k.OBCIMiscSoftReset);
     };
 
+    /**
+     * Purpose: To get the specified channelSettings register data from printRegisterSettings call
+     * @param channelNumber
+     * @returns {Promise.<T>|*}
+     */
     OpenBCIBoard.prototype.getSettingsForChannel = function(channelNumber) {
         var self = this;
 
@@ -192,9 +243,13 @@ function OpenBCIFactory() {
 
     };
 
+    /**
+     * Purpose: To print out the register settins to the console
+     * @returns {Promise.<T>|*}
+     */
     OpenBCIBoard.prototype.printRegisterSettings = function() {
         var self = this;
-        return writeAndDrain(self.serial, k.OBCIMiscQueryRegisterSettings).then(function() {
+        return self.write(k.OBCIMiscQueryRegisterSettings).then(function() {
             self.isLookingForKeyInBuffer = true; //need to wait for key in
         });
     };
@@ -207,10 +262,57 @@ function OpenBCIFactory() {
     OpenBCIBoard.prototype.channelOff = function(channelNumber) {
         var self = this;
         return k.commandChannelOff(channelNumber).then(function(charCommand) {
-            console.log('sent command to turn channel ' + channelNumber + ' by sending command ' + charCommand);
-            return writeAndDrain(self.serial,charCommand);
+            //console.log('sent command to turn channel ' + channelNumber + ' by sending command ' + charCommand);
+            return self.write(charCommand);
         });
     };
+
+    /**
+     * Purpose: Send a command to the board to turn a specified channel on
+     * @param channelNumber
+     * @returns {Promise.<T>|*}
+     */
+    OpenBCIBoard.prototype.channelOn = function(channelNumber) {
+        var self = this;
+        return k.commandChannelOn(channelNumber).then(function(charCommand) {
+            //console.log('sent command to turn channel ' + channelNumber + ' by sending command ' + charCommand);
+            return self.write(charCommand);
+        });
+    };
+
+    /**
+     * Purpose: To send a channel setting command to the board
+     * @param channelNumber - Number (1-16)
+     * @param powerDown - Bool (true -> OFF, false -> ON (default))
+     *          turns the channel on or off
+     * @param gain - Number (1,2,4,6,8,12,24(default))
+     *          sets the gain for the channel
+     * @param inputType - String (normal,shorted,biasMethod,mvdd,temp,testsig,biasDrp,biasDrn)
+     *          selects the ADC channel input source
+     * @param bias - Bool (true -> Include in bias (default), false -> remove from bias)
+     *          selects to include the channel input in bias generation
+     * @param srb2 - Bool (true -> Connect this input to SRB2 (default),
+     *                     false -> Disconnect this input from SRB2)
+     *          Select to connect (true) this channel's P input to the SRB2 pin. This closes
+     *              a switch between P input and SRB2 for the given channel, and allows the
+     *              P input to also remain connected to the ADC.
+     * @param srb1 - Bool (true -> connect all N inputs to SRB1,
+     *                     false -> Disconnect all N inputs from SRB1 (default))
+     *          Select to connect (true) all channels' N inputs to SRB1. This effects all pins,
+     *              and disconnects all N inputs from the ADC.
+     * @returns {Promise} resolves if sent, rejects on bad input or no board
+     */
+    OpenBCIBoard.prototype.channelSet = function(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
+
+        var arrayOfCommands = [];
+        getChannelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1).then(function(arr) {
+            arrayOfCommands = arr;
+        }, function(err) {
+            return Promise.reject(err);
+        });
+
+    };
+
 
     /**
      * Purpose: To start simulating an open bci board
@@ -318,7 +420,7 @@ function OpenBCIFactory() {
         var sizeOfData = data.byteLength;
         self.bytesIn += sizeOfData; // increment to keep track of how many bytes we are receiving
         if(self.isLookingForKeyInBuffer) { //in a reset state
-            console.log(data.toString());
+            //console.log(data.toString());
             var sizeOfSearchBuf = self.searchingBuf.byteLength;
             for (var i = 0; i < sizeOfData - (sizeOfSearchBuf - 1); i++) {
                 if (self.searchingBuf.equals(data.slice(i, i + sizeOfSearchBuf))) {
@@ -327,7 +429,12 @@ function OpenBCIFactory() {
                         self.isLookingForKeyInBuffer = false;
                         self.emit('ready');
                     } else {
-                        console.log('Found register... changing search buffer')
+                        //console.log('Found register... changing search buffer');
+                        getChannelSettingsObj(data.slice(i)).then(function(channelSettingsObject) {
+                            self.emit('query',channelSettingsObject);
+                        }, function(err) {
+                            console.log('Error: ' + err);
+                        });
                         self.searchingBuf = self.moneyBuf;
                         break;
                     }
@@ -371,12 +478,12 @@ function OpenBCIFactory() {
         var macSerialPrefix = 'usbserial-D';
         var self = this;
         serialPort.list(function(err, ports) {
-            console.log('Searching for ports...');
+            //console.log('Searching for ports...');
             var foundPort = false;
             ports.forEach(function (port) {
                 if (port.comName.search(macSerialPrefix) > 0) {
                     self.portName = port.comName;
-                    console.log('found');
+                    //console.log('found');
                     callback(port.comName); //return the portname
                     foundPort = true;
                 }
@@ -543,6 +650,24 @@ function OpenBCIFactory() {
         self.printPacketsBad();
     };
 
+    OpenBCIBoard.prototype.debugPrintChannelSettings = function(channelSettingsObj) {
+        console.log('-- Channel Settings Object --');
+        var powerState = 'OFF';
+        if(channelSettingsObj.POWER_DOWN.toString().localeCompare('1')) {
+            powerState = 'ON';
+        }
+        console.log('---- POWER STATE: ' + powerState);
+        console.log('-- END --');
+    };
+
+    OpenBCIBoard.prototype.channelIsOnFromChannelSettingsObject = function(channelSettingsObject) {
+        //console.log(channelSettingsObject.POWER_DOWN);
+        if(channelSettingsObject.POWER_DOWN.toString().localeCompare('1')) {
+            return true;
+        }
+        return false;
+    };
+
     // TODO: boardCheckConnection (py: check_connection)
     // TODO: boardReconnect (py: reconnect)
     // TODO: boardTestAuto
@@ -582,4 +707,145 @@ function writeAndDrain(boardSerial,data) {
             }
         })
     });
+}
+
+function getChannelSettingsObj(rawChannelBuffer) {
+    return new Promise(function(resolve,reject) {
+        if (rawChannelBuffer === undefined || rawChannelBuffer === null) {
+            reject('Undefined or null channel buffer');
+        }
+
+        var channelSettingsObject = {
+            CHANNEL:'0',
+            POWER_DOWN:'0',
+            GAIN_SET:'0',
+            INPUT_TYPE_SET:'0',
+            BIAS_SET:'0',
+            SRB2_SET:'0',
+            SRB1_SET:'0'
+        };
+
+        var bitsToSkip = 20; //CH1SET, 0x05, 0xE0 --> 20 bits
+        var sizeOfData = rawChannelBuffer.byteLength;
+
+        //if(sizeOfData < bitsToSkip) {
+        //    reject('Channel buffer is smaller than the number of bytes we need to skip')
+        //}
+
+        var objIndex = 0;
+        for(var j = bitsToSkip; j < sizeOfData - 1;j+=3) { //every three bytes there is data
+            switch (objIndex) {
+                case 0:
+                    channelSettingsObject.POWER_DOWN = rawChannelBuffer.slice(j,j+1).toString();
+                    break;
+                default:
+                    break;
+            }
+
+            objIndex++;
+            //console.log(j + ': ' + data.slice(j,j+1).toString());
+        }
+        resolve(channelSettingsObject);
+    });
+}
+
+/**
+ *
+ * @param channelNumber - Number (1-16)
+ * @param powerDown - Bool (true -> OFF, false -> ON (default))
+ *          turns the channel on or off
+ * @param gain - Number (1,2,4,6,8,12,24(default))
+ *          sets the gain for the channel
+ * @param inputType - String (normal,shorted,biasMethod,mvdd,temp,testsig,biasDrp,biasDrn)
+ *          selects the ADC channel input source
+ * @param bias - Bool (true -> Include in bias (default), false -> remove from bias)
+ *          selects to include the channel input in bias generation
+ * @param srb2 - Bool (true -> Connect this input to SRB2 (default),
+ *                     false -> Disconnect this input from SRB2)
+ *          Select to connect (true) this channel's P input to the SRB2 pin. This closes
+ *              a switch between P input and SRB2 for the given channel, and allows the
+ *              P input to also remain connected to the ADC.
+ * @param srb1 - Bool (true -> connect all N inputs to SRB1,
+ *                     false -> Disconnect all N inputs from SRB1 (default))
+ *          Select to connect (true) all channels' N inputs to SRB1. This effects all pins,
+ *              and disconnects all N inputs from the ADC.
+ * @returns {Promise} resolves array of commands to be sent, rejects on bad input or no board
+ */
+function getChannelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
+
+    // Used to store and assemble the commands
+    var cmdChannelNumber,
+        cmdPowerDown,
+        cmdGain,
+        cmdInputType,
+        cmdBias,
+        cmdSrb2,
+        cmdSrb1;
+
+    return new Promise(function(resolve,reject) {
+        // Validate the input
+        if (!isNumber(channelNumber)) { reject('channelNumber must be of type \'number\' '); }
+        if (!isBoolean(powerDown)) { reject('powerDown must be of type \'boolean\' '); }
+        if (!isNumber(gain)) { reject('gain must be of type \'number\' '); }
+        if (!isString(inputType)) { reject('inputType must be of type \'string\' '); }
+        if (!isBoolean(bias)) { reject('bias must be of type \'boolean\' '); }
+        if (!isBoolean(srb2)) { reject('srb1 must be of type \'boolean\' '); }
+        if (!isBoolean(srb1)) { reject('srb2 must be of type \'boolean\' '); }
+
+        // Set Channel Number
+        k.commandChannelForCmd(channelNumber).then(function(command) {
+            cmdChannelNumber = command;
+        },function(err) {
+            reject(err);
+        });
+
+        // Set POWER_DOWN
+        cmdPowerDown = powerDown ? k.OBCIChannelCmdPowerOff : k.OBCIChannelCmdPowerOn;
+
+        // Set Gain
+        k.commandForGain(gain).then(function(command) {
+            cmdGain = command;
+        },function(err) {
+            reject(err);
+        });
+
+        // Set ADC string
+        k.commandForADCString(inputType).then(function(command) {
+            cmdInputType = command;
+        },function(err) {
+            reject(err);
+        });
+
+        // Set BIAS
+        cmdBias = bias ? k.OBCIChannelCmdBiasInclude : k.OBCIChannelCmdBiasRemove;
+
+        // Set SRB2
+        cmdSrb2 = srb2 ? k.OBCIChannelCmdSRB2Connect : k.OBCIChannelCmdSRB2Diconnect;
+
+        // Set SRB1
+        cmdSrb1 = srb1 ? k.OBCIChannelCmdSRB1Connect : k.OBCIChannelCmdSRB1Diconnect;
+
+        resolve([
+            k.OBCIChannelCmdSet,
+            cmdChannelNumber,
+            cmdPowerDown,
+            cmdGain,
+            cmdInputType,
+            cmdBias,
+            cmdSrb2,
+            cmdSrb1,
+            k.OBCIChannelCmdLatch
+        ]);
+
+    });
+}
+
+function isNumber(input) {
+    return (typeof input === 'number');
+}
+function isBoolean(input) {
+    return (typeof input === 'boolean');
+}
+function isString(input) {
+    return (typeof input === 'string');
 }

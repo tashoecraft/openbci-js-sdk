@@ -91,6 +91,16 @@ const kOBCIChannelCmdSRB1Diconnect  = '0';
 const kOBCIChannelCmdSRB2Connect    = '1';
 const kOBCIChannelCmdSRB2Diconnect  = '0';
 
+/** Channel Setting Helper Strings */
+const kOBCIStringADCNormal      = 'normal';
+const kOBCIStringADCShorted     = 'shorted';
+const kOBCIStringADCBiasMethod  = 'biasMethod';
+const kOBCIStringADCMvdd        = 'mvdd';
+const kOBCIStringADCTemp        = 'temp';
+const kOBCIStringADCTestSig     = 'testSig';
+const kOBCIStringADCBiasDrp     = 'biasDrp';
+const kOBCIStringADCBiasDrn     = 'biasDrn';
+
 /** Default Channel Settings */
 const kOBCIChannelDefaultAllSet = 'd';
 const kOBCIChannelDefaultAllGet = 'D';
@@ -392,46 +402,62 @@ module.exports = {
     OBCIChannelCmdChannel_14:kOBCIChannelCmdChannel_14,
     OBCIChannelCmdChannel_15:kOBCIChannelCmdChannel_15,
     OBCIChannelCmdChannel_16:kOBCIChannelCmdChannel_16,
-    commandChannelForCmd: function(channelNumber,callback) {
-        switch (channelNumber) {
-            case 1:
-                return kOBCIChannelCmdChannel_1;
-            case 2:
-                return kOBCIChannelCmdChannel_2;
-            case 3:
-                return kOBCIChannelCmdChannel_3;
-            case 4:
-                return kOBCIChannelCmdChannel_4;
-            case 5:
-                return kOBCIChannelCmdChannel_5;
-            case 6:
-                return kOBCIChannelCmdChannel_6;
-            case 7:
-                return kOBCIChannelCmdChannel_7;
-            case 8:
-                return kOBCIChannelCmdChannel_8;
-            case 9:
-                return kOBCIChannelCmdChannel_9;
-            case 10:
-                return kOBCIChannelCmdChannel_10;
-            case 11:
-                return kOBCIChannelCmdChannel_11;
-            case 12:
-                return kOBCIChannelCmdChannel_12;
-            case 13:
-                return kOBCIChannelCmdChannel_13;
-            case 14:
-                return kOBCIChannelCmdChannel_14;
-            case 15:
-                return kOBCIChannelCmdChannel_15;
-            case 16:
-                return kOBCIChannelCmdChannel_16;
-            default:
-                if(callback) {
-                    callback('Error [commandChannelOn]: Invalid Channel Number')
-                }
-                return;
-        }
+    commandChannelForCmd: function(channelNumber) {
+        return new Promise(function(resolve,reject) {
+            switch (channelNumber) {
+                case 1:
+                    resolve(kOBCIChannelCmdChannel_1);
+                    break;
+                case 2:
+                    resolve(kOBCIChannelCmdChannel_2);
+                    break;
+                case 3:
+                    resolve(kOBCIChannelCmdChannel_3);
+                    break;
+                case 4:
+                    resolve(kOBCIChannelCmdChannel_4);
+                    break;
+                case 5:
+                    resolve(kOBCIChannelCmdChannel_5);
+                    break;
+                case 6:
+                    resolve(kOBCIChannelCmdChannel_6);
+                    break;
+                case 7:
+                    resolve(kOBCIChannelCmdChannel_7);
+                    break;
+                case 8:
+                    resolve(kOBCIChannelCmdChannel_8);
+                    break;
+                case 9:
+                    resolve(kOBCIChannelCmdChannel_9);
+                    break;
+                case 10:
+                    resolve(kOBCIChannelCmdChannel_10);
+                    break;
+                case 11:
+                    resolve(kOBCIChannelCmdChannel_11);
+                    break;
+                case 12:
+                    resolve(kOBCIChannelCmdChannel_12);
+                    break;
+                case 13:
+                    resolve(kOBCIChannelCmdChannel_13);
+                    break;
+                case 14:
+                    resolve(kOBCIChannelCmdChannel_14);
+                    break;
+                case 15:
+                    resolve(kOBCIChannelCmdChannel_15);
+                    break;
+                case 16:
+                    resolve(kOBCIChannelCmdChannel_16);
+                    break;
+                default:
+                    reject('Invalid channel number');
+                    break;
+            }
+        });
     },
     OBCIChannelCmdGain_1:kOBCIChannelCmdGain_1,
     OBCIChannelCmdGain_2:kOBCIChannelCmdGain_2,
@@ -440,6 +466,36 @@ module.exports = {
     OBCIChannelCmdGain_8:kOBCIChannelCmdGain_8,
     OBCIChannelCmdGain_12:kOBCIChannelCmdGain_12,
     OBCIChannelCmdGain_24:kOBCIChannelCmdGain_24,
+    commandForGain: function(gainSetting) {
+        return new Promise(function(resolve,reject) {
+            switch (gainSetting) {
+                case 1:
+                    resolve(kOBCIChannelCmdGain_1);
+                    break;
+                case 2:
+                    resolve(kOBCIChannelCmdGain_2);
+                    break;
+                case 4:
+                    resolve(kOBCIChannelCmdGain_4);
+                    break;
+                case 6:
+                    resolve(kOBCIChannelCmdGain_6);
+                    break;
+                case 8:
+                    resolve(kOBCIChannelCmdGain_8);
+                    break;
+                case 12:
+                    resolve(kOBCIChannelCmdGain_12);
+                    break;
+                case 24:
+                    resolve(kOBCIChannelCmdGain_24);
+                    break;
+                default:
+                    reject('Invalid gain setting of ' + gainSetting + ' tisk tisk, gain must be (1,2,4,6,8,12,24)');
+                    break;
+            }
+        });
+    },
     OBCIChannelCmdLatch:kOBCIChannelCmdLatch,
     OBCIChannelCmdPowerOff:kOBCIChannelCmdPowerOff,
     OBCIChannelCmdPowerOn:kOBCIChannelCmdPowerOn,
@@ -448,6 +504,54 @@ module.exports = {
     OBCIChannelCmdSRB1Diconnect:kOBCIChannelCmdSRB1Diconnect,
     OBCIChannelCmdSRB2Connect:kOBCIChannelCmdSRB2Connect,
     OBCIChannelCmdSRB2Diconnect:kOBCIChannelCmdSRB2Diconnect,
+    /** Channel Setting Helper Strings */
+    OBCIStringADCNormal:kOBCIStringADCNormal,
+    OBCIStringADCShorted:kOBCIStringADCShorted,
+    OBCIStringADCBiasMethod:kOBCIStringADCBiasMethod,
+    OBCIStringADCMvdd:kOBCIStringADCMvdd,
+    OBCIStringADCTemp:kOBCIStringADCTemp,
+    OBCIStringADCTestSig:kOBCIStringADCTestSig,
+    OBCIStringADCBiasDrp:kOBCIStringADCBiasDrp,
+    OBCIStringADCBiasDrn:kOBCIStringADCBiasDrn,
+    /**
+     * Purpose: To convert a string like 'normal' to the correct command (i.e. '1')
+     * @param adcString
+     * @returns {Promise}
+     * Author: AJ Keller (@pushtheworldllc)
+     */
+    commandForADCString:function(adcString) {
+        return new Promise(function(resolve,reject) {
+            switch (adcString) {
+                case kOBCIStringADCNormal:
+                    resolve(kOBCIChannelCmdADCNormal);
+                    break;
+                case kOBCIStringADCShorted:
+                    resolve(kOBCIChannelCmdADCShorted);
+                    break;
+                case kOBCIStringADCBiasMethod:
+                    resolve(kOBCIChannelCmdADCBiasMethod);
+                    break;
+                case kOBCIStringADCMvdd:
+                    resolve(kOBCIChannelCmdADCMVDD);
+                    break;
+                case kOBCIStringADCTemp:
+                    resolve(kOBCIChannelCmdADCTemp);
+                    break;
+                case kOBCIStringADCTestSig:
+                    resolve(kOBCIChannelCmdADCTestSig);
+                    break;
+                case kOBCIStringADCBiasDrp:
+                    resolve(kOBCIChannelCmdADCBiasDRP);
+                    break;
+                case kOBCIStringADCBiasDrn:
+                    resolve(kOBCIChannelCmdADCBiasDRN);
+                    break;
+                default:
+                    reject('Invalid ADC string');
+                    break;
+            }
+        });
+    },
     /** Default Channel Settings */
     OBCIChannelDefaultAllSet:kOBCIChannelDefaultAllSet,
     OBCIChannelDefaultAllGet:kOBCIChannelDefaultAllGet,

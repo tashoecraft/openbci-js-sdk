@@ -501,64 +501,90 @@ describe('OpenBCIConstants', function() {
             return expect(result).to.be.rejected;
         });
     });
-    describe('should return correct channel off command for number', function(){
+    describe('should return correct channel on command for number', function(){
         it('Channel 1', function() {
-            assert.equal('!', k.commandChannelOn(1));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 2', function() {
-            assert.equal('@', k.commandChannelOn(2));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 3', function() {
-            assert.equal('#', k.commandChannelOn(3));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 4', function() {
-            assert.equal('$', k.commandChannelOn(4));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 5', function() {
-            assert.equal('%', k.commandChannelOn(5));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 6', function() {
-            assert.equal('^', k.commandChannelOn(6));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 7', function() {
-            assert.equal('&', k.commandChannelOn(7));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 8', function() {
-            assert.equal('*', k.commandChannelOn(8));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 9', function() {
-            assert.equal('Q', k.commandChannelOn(9));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 10', function() {
-            assert.equal('W', k.commandChannelOn(10));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 11', function() {
-            assert.equal('E', k.commandChannelOn(11));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 12', function() {
-            assert.equal('R', k.commandChannelOn(12));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 13', function() {
-            assert.equal('T', k.commandChannelOn(13));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 14', function() {
-            assert.equal('Y', k.commandChannelOn(14));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 15', function() {
-            assert.equal('U', k.commandChannelOn(15));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Channel 16', function() {
-            assert.equal('I', k.commandChannelOn(16));
+            var expectation = '!';
+            var result = k.commandChannelOn(1);
+            return expect(result).to.eventually.equal(expectation);
         });
         it('Invalid channel request', function() {
-            k.commandChannelOn(17, function(error) {
-                assert(error);
-            });
-        });
-        it('Nothing is called back when valid channel', function() {
-            k.commandChannelOn(1, function(error) {
-                assert(error, null);
-            });
+            var result = k.commandChannelOn(17);
+            return expect(result).to.be.rejected;
         });
     });
     describe('Number of channels',function() {

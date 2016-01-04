@@ -1,14 +1,14 @@
+var sinon = require('sinon');
 var chai = require('chai'),
     should = chai.should(),
     expect = chai.expect,
-    openBCIBoard = require('../openBCIBoard'),
-    OpenBCISample = openBCIBoard.OpenBCISample;
+    openBCIBoard = require('../openBCIBoard');
 
 
 describe('openbci-sdk',function() {
-    describe('#testsWithBoard', function() {
+    xdescribe('#testsWithBoard', function() {
         this.timeout(10000);
-        xdescribe('#connect', function() {
+        describe('#connect', function() {
             var running = false;
             beforeEach(function(done) {
                 var ourBoard = new openBCIBoard.OpenBCIBoard();
@@ -49,8 +49,8 @@ describe('openbci-sdk',function() {
                 expect(running).equals(true);
             });
         });
-        describe('#printRegisterSettings', function() {
-            var running = false;
+        describe('#confirm channel 1 off with query register settings', function() {
+            var channelIsOn = false;
             var didTryToSendPrintCommand = false;
             var didTryToTurnChannel1Off = false;
             beforeEach(function(done) {
@@ -59,21 +59,25 @@ describe('openbci-sdk',function() {
                 ourBoard.autoFindOpenBCIBoard(function (portName, ports) {
                     if (portName) {
                         ourBoard.connect(portName).then(function (boardSerial) {
-                            console.log('board connected');
+                            //console.log('board connected');
                             ourBoard.on('ready', function () {
-                                console.log('Ready to print register settings!');
+                                //console.log('Ready to print register settings!');
                                 if (!didTryToSendPrintCommand) {
                                     didTryToSendPrintCommand = true;
-                                    ourBoard.printRegisterSettings();
+                                    ourBoard.getSettingsForChannel(1); //sets isChannelOn to true
                                 } else if (!didTryToTurnChannel1Off) {
                                     didTryToTurnChannel1Off = true;
-                                    console.log('Tried to turn channel 1 off');
+                                    //console.log('Tried to turn channel 1 off');
                                     ourBoard.channelOff(1);
                                     setTimeout(function() {
-                                        console.log('Re print register settings');
-                                        ourBoard.printRegisterSettings();
+                                        //console.log('Re print register settings');
+                                        ourBoard.getSettingsForChannel(1);
                                     },100);
                                 }
+                                ourBoard.on('query',function(channelSettingsObject) {
+                                    //ourBoard.debugPrintChannelSettings(channelSettingsObject);
+                                    channelIsOn = ourBoard.channelIsOnFromChannelSettingsObject(channelSettingsObject);
+                                });
                             });
                         }).catch(function (err) {
                             console.log('Error [setup]: ' + err);
@@ -87,21 +91,74 @@ describe('openbci-sdk',function() {
                     }
                 });
                 setTimeout(function () {
-                    ourBoard.streamStop().then(ourBoard.disconnect()).then(function (msg) {
-                        running = true;
+                    ourBoard.streamStop().then(ourBoard.disconnect).then(function (msg) {
                         done();
                     }, function (err) {
                         console.log('Error: ' + err);
                         done();
                     });
-                }, 8000);
+                }, 6000);
             });
-            it('should print the register settings', function() {
-                expect(running).equals(true);
+            it('should turn channel off', function() {
+                expect(channelIsOn).equals(false);
+            });
+        });
+        describe('#confirm channel 2 off with query register settings', function() {
+            var channelIsOn = true;
+            var didTryToSendPrintCommand = false;
+            var didTryToTurnChannel1Off = false;
+            beforeEach(function(done) {
+                var ourBoard = new openBCIBoard.OpenBCIBoard();
+
+                ourBoard.autoFindOpenBCIBoard(function (portName, ports) {
+                    if (portName) {
+                        ourBoard.connect(portName).then(function (boardSerial) {
+                            //console.log('board connected');
+                            ourBoard.on('ready', function () {
+                                //console.log('Ready to print register settings!');
+                                if (!didTryToSendPrintCommand) {
+                                    didTryToSendPrintCommand = true;
+                                    ourBoard.getSettingsForChannel(2); //set isChannelOn to true
+                                } else if (!didTryToTurnChannel1Off) {
+                                    didTryToTurnChannel1Off = true;
+                                    //console.log('Tried to turn channel 1 off');
+                                    ourBoard.channelOff(2);
+                                    setTimeout(function() {
+                                        //console.log('Re print register settings');
+                                        ourBoard.getSettingsForChannel(2);
+                                    },100);
+                                }
+                                ourBoard.on('query',function(channelSettingsObject) {
+                                    //ourBoard.debugPrintChannelSettings(channelSettingsObject);
+                                    channelIsOn = ourBoard.channelIsOnFromChannelSettingsObject(channelSettingsObject);
+                                });
+                            });
+                        }).catch(function (err) {
+                            console.log('Error [setup]: ' + err);
+                            done();
+                        });
+
+                    } else {
+                        /** Display list of ports*/
+                        console.log('Port not found... check ports for other ports');
+                        done();
+                    }
+                });
+                setTimeout(function () {
+                    ourBoard.streamStop().then(ourBoard.disconnect).then(function (msg) {
+                        done();
+                    }, function (err) {
+                        console.log('Error: ' + err);
+                        done();
+                    });
+                }, 6000);
+            });
+            it('should turn channel off', function() {
+                expect(channelIsOn).equals(false);
             });
         });
     });
-    xdescribe('#boardSimulator', function() {
+    xdescribe('#simulator', function() {
         var running = false;
         beforeEach(function(done) {
             var ourBoard = new openBCIBoard.OpenBCIBoard();
@@ -128,4 +185,31 @@ describe('openbci-sdk',function() {
             expect(running).equals(true);
         });
     });
+    xdescribe('#write', function() {
+        this.timeout(10000);
+        //var running = false;
+        var ourBoard = new openBCIBoard.OpenBCIBoard();
+        //console.log(ourBoard.writeAndDrain.toString());
+        ourBoard.serial = 'taco';
+        //var sandbox = sinon.sandbox.create();//(ourBoard.writeAndDrain);
+        var mock = sinon.mock(ourBoard);
+        console.log(JSON.stringify(mock));
+
+        ourBoard.write('1');
+        ourBoard.write('2');
+        beforeEach(function(done) {
+            setTimeout(function() {
+                done();
+            },40);
+        });
+        afterEach(function() {
+            mock.restore();
+        });
+        it('should send command to writeAndDrain three times', function() {
+            //console.log(JSON.stringify(ourBoard));
+            expect(ourBoard.calledThrice);
+            //expect(running).equals(true);
+        });
+    });
+
 });
