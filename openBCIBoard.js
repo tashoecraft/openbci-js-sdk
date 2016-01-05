@@ -239,9 +239,9 @@ function OpenBCIFactory() {
 
     /**
      * Purpose: To get the specified channelSettings register data from printRegisterSettings call
-     * @param channelNumber
+     * @param channelNumber - a number
      * @returns {Promise.<T>|*}
-     * Author: AJ Keller
+     * Author: AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype.getSettingsForChannel = function(channelNumber) {
         var self = this;
@@ -250,12 +250,12 @@ function OpenBCIFactory() {
             self.searchingBuf = newSearchingBuffer;
             return self.printRegisterSettings();
         });
-
     };
 
     /**
-     * Purpose: To print out the register settins to the console
+     * Purpose: To print out the register settings to the console
      * @returns {Promise.<T>|*}
+     * Author: AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype.printRegisterSettings = function() {
         var self = this;
@@ -268,6 +268,7 @@ function OpenBCIFactory() {
      * Purpose: Send a command to the board to turn a specified channel off
      * @param channelNumber
      * @returns {Promise.<T>}
+     * Author: AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype.channelOff = function(channelNumber) {
         var self = this;
@@ -281,6 +282,7 @@ function OpenBCIFactory() {
      * Purpose: Send a command to the board to turn a specified channel on
      * @param channelNumber
      * @returns {Promise.<T>|*}
+     * Author: AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype.channelOn = function(channelNumber) {
         var self = this;
@@ -352,7 +354,7 @@ function OpenBCIFactory() {
                     self.emit('sample',newSample);
                     oldSample = newSample;
                     resolve();
-                }, 100);
+                }, 20);
 
             }
 
@@ -384,9 +386,8 @@ function OpenBCIFactory() {
     };
 
     /**
-     * Purpose: This function is used as a convenience method to determine what the current
-     *              sample rate is.
-     * @returns {Number} The sampe rate
+     * Purpose: Get the the current sample rate is.
+     * @returns {Number} The sample rate
      * Note: This is dependent on if you configured the board correctly on setup options
      * Author: AJ Keller (@pushtheworldllc)
      */

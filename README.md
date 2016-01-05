@@ -220,3 +220,109 @@ Sends a soft reset command to the board.
 **Note, this method must be sent to the board before you can start streaming. This triggers the initial 'ready' event emitter.**
 
 **_Returns_** a promise, fulfilled if the command was sent to the write queue.
+
+### .getSettingsForChannel(channelNumber)
+
+Gets the specified channelSettings register data from printRegisterSettings call.
+
+**_channelNumber_** 
+
+A number specifying which channel you want to get data on. Only 1-8 at this time.
+
+**Note, at this time this does not work for the daisy board**
+
+**_Returns_** a promise, fulfilled if the command was sent to the board and the `.processBytes()` function is ready to reach for the specified channel.
+
+### .printRegisterSettings()
+
+Prints all register settings for the ADS1299 and the LIS3DH on the OpenBCI board.
+
+**_Returns_** a promise, fulfilled if the command was sent to the write queue.
+
+### .channelOff(channelNumber)
+
+Turn off a specified channel
+
+**_channelNumber_**
+
+A number (1-16) specifying which channel you want to turn off. 
+
+**_Returns_** a promise, fulfilled if the command was sent to the write queue.
+
+### .channelOn(channelNumber)
+
+Turn on a specified channel
+
+**_channelNumber_**
+
+A number (1-16) specifying which channel you want to turn on. 
+
+**_Returns_** a promise, fulfilled if the command was sent to the write queue.
+
+### .channelSet(channelNumber,powerDown,gain,inputType,bias,srb2,srb1)
+
+Send a channel setting command to the board.
+
+**_channelNumber_**  
+
+Determines which channel to set. It's a 'Number' (1-16)
+
+**_powerDown_** 
+
+Powers the channel up or down. It's a 'Bool' where `true` turns the channel off and `false` turns the channel on (default)
+
+**_gain_**
+ 
+Sets the gain for the channel. It's a 'Number' that is either (1,2,4,6,8,12,24(default))
+  
+**_inputType_** 
+  
+Selects the ADC channel input source. It's a 'String' that **MUST** be one of the following: "normal", "shorted", "biasMethod" , "mvdd" , "temp" , "testsig", "biasDrp", "biasDrn".
+
+**_bias_** 
+
+Selects if the channel shall include the channel input in bias generation. It's a 'Bool' where `true` includes the channel in bias (default) or `false` it removes it from bias.
+
+**_srb2_**
+
+Select to connect (`true`) this channel's P input to the SRB2 pin. This closes a switch between P input and SRB2 for the given channel, and allows the P input to also remain connected to the ADC. It's a 'Bool' where `true` connects this input to SRB2 (default) or `false` which disconnect this input from SRB2.
+
+**_srb1_**
+           
+Select to connect (`true`) all channels' N inputs to SRB1. This effects all pins, and disconnects all N inputs from the ADC. It's a 'Bool' where `true` connects all N inputs to SRB1 and `false` disconnects all N inputs from SRB1 (default).
+
+**_Returns_** a promise fulfilled if proper commands sent to the write queue, rejects on bad input or no board.
+
+### .simulatorStart()
+
+To start simulating an OpenBCI board. 
+
+**Note, must be called after the constructor.**
+
+**_Returns_** a promise, if the simulator was able to start.
+
+### .simulatorStop()
+
+To stop simulating an OpenBCI board. 
+
+**Note, must be called after the constructor.**
+
+**_Returns_** a promise, if the simulator was able to stop.
+
+### .sampleRate()
+
+Get the current sample rate.
+
+**Note: This is dependent on if you configured the board correctly on setup options. Specifically as a daisy.**
+
+**_Returns_** a number, the current sample rate.
+
+### .numberOfChannels
+
+Get the current number of channels available to use. (i.e. 8 or 16).
+
+**Note: This is dependent on if you configured the board correctly on setup options. Specifically as a daisy.**
+
+**_Returns_** a number, the total number of available channels.
+
+
