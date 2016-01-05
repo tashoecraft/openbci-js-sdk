@@ -632,7 +632,47 @@ describe('OpenBCIConstants', function() {
             assert.equal(250, k.OBCISampleRate250);
         });
     });
-    describe('#channelSetter', function() {
-
+    describe('#getChannelSetter', function() {
+        //'channel 1, power on, gain 24, inputType normal, bias include, srb2 connect, srb1 dissconnect'
+        describe('channel input selection works', function() {
+            it('channel 1', function() {
+                var arrayOfCommands = k.getChannelSetter(2,false,24,'normal',true,true,false);
+                return expect(arrayOfCommands).to.eventually.equal(['x','2','0','6','0','1','1','0','X']);
+            });
+            it('channel 5', function() {
+                var arrayOfCommands = k.getChannelSetter(5,false,24,'normal',true,true,false);
+                return expect(arrayOfCommands[1]).to.eventually.equal('5');
+            });
+            it('channel 9', function() {
+                var arrayOfCommands = k.getChannelSetter(9,false,24,'normal',true,true,false);
+                return expect(arrayOfCommands[1]).to.eventually.equal('Q');
+            });
+            it('channel 15', function() {
+                var arrayOfCommands = k.getChannelSetter(15,false,24,'normal',true,true,false);
+                return expect(arrayOfCommands[1]).to.eventually.equal('U');
+            });
+            it('Invalid channel selection', function() {
+                var arrayOfCommands = k.getChannelSetter(0,false,24,'normal',true,true,false);
+                return expect(arrayOfCommands).to.be.rejected;
+            });
+            it('Invalid type', function() {
+                var arrayOfCommands = k.getChannelSetter('0',false,24,'normal',true,true,false);
+                return expect(arrayOfCommands).to.be.rejected;
+            });
+        });
+        describe('power selection works', function() {
+            it('on', function() {
+                var arrayOfCommands = k.getChannelSetter(1,false,24,'normal',true,true,false);
+                return expect(arrayOfCommands[2]).to.eventually.equal('0');
+            });
+            it('off', function() {
+                var arrayOfCommands = k.getChannelSetter(1,true,24,'normal',true,true,false);
+                return expect(arrayOfCommands[2]).to.eventually.equal('1');
+            });
+            it('Invalid type', function() {
+                var arrayOfCommands = k.getChannelSetter(1,'taco',24,'normal',true,true,false);
+                return expect(arrayOfCommands).to.be.rejected;
+            });
+        });
     });
 });

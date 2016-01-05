@@ -402,63 +402,7 @@ module.exports = {
     OBCIChannelCmdChannel_14:kOBCIChannelCmdChannel_14,
     OBCIChannelCmdChannel_15:kOBCIChannelCmdChannel_15,
     OBCIChannelCmdChannel_16:kOBCIChannelCmdChannel_16,
-    commandChannelForCmd: function(channelNumber) {
-        return new Promise(function(resolve,reject) {
-            switch (channelNumber) {
-                case 1:
-                    resolve(kOBCIChannelCmdChannel_1);
-                    break;
-                case 2:
-                    resolve(kOBCIChannelCmdChannel_2);
-                    break;
-                case 3:
-                    resolve(kOBCIChannelCmdChannel_3);
-                    break;
-                case 4:
-                    resolve(kOBCIChannelCmdChannel_4);
-                    break;
-                case 5:
-                    resolve(kOBCIChannelCmdChannel_5);
-                    break;
-                case 6:
-                    resolve(kOBCIChannelCmdChannel_6);
-                    break;
-                case 7:
-                    resolve(kOBCIChannelCmdChannel_7);
-                    break;
-                case 8:
-                    resolve(kOBCIChannelCmdChannel_8);
-                    break;
-                case 9:
-                    resolve(kOBCIChannelCmdChannel_9);
-                    break;
-                case 10:
-                    resolve(kOBCIChannelCmdChannel_10);
-                    break;
-                case 11:
-                    resolve(kOBCIChannelCmdChannel_11);
-                    break;
-                case 12:
-                    resolve(kOBCIChannelCmdChannel_12);
-                    break;
-                case 13:
-                    resolve(kOBCIChannelCmdChannel_13);
-                    break;
-                case 14:
-                    resolve(kOBCIChannelCmdChannel_14);
-                    break;
-                case 15:
-                    resolve(kOBCIChannelCmdChannel_15);
-                    break;
-                case 16:
-                    resolve(kOBCIChannelCmdChannel_16);
-                    break;
-                default:
-                    reject('Invalid channel number');
-                    break;
-            }
-        });
-    },
+    commandChannelForCmd:commandChannelForCmd,
     OBCIChannelCmdGain_1:kOBCIChannelCmdGain_1,
     OBCIChannelCmdGain_2:kOBCIChannelCmdGain_2,
     OBCIChannelCmdGain_4:kOBCIChannelCmdGain_4,
@@ -466,36 +410,7 @@ module.exports = {
     OBCIChannelCmdGain_8:kOBCIChannelCmdGain_8,
     OBCIChannelCmdGain_12:kOBCIChannelCmdGain_12,
     OBCIChannelCmdGain_24:kOBCIChannelCmdGain_24,
-    commandForGain: function(gainSetting) {
-        return new Promise(function(resolve,reject) {
-            switch (gainSetting) {
-                case 1:
-                    resolve(kOBCIChannelCmdGain_1);
-                    break;
-                case 2:
-                    resolve(kOBCIChannelCmdGain_2);
-                    break;
-                case 4:
-                    resolve(kOBCIChannelCmdGain_4);
-                    break;
-                case 6:
-                    resolve(kOBCIChannelCmdGain_6);
-                    break;
-                case 8:
-                    resolve(kOBCIChannelCmdGain_8);
-                    break;
-                case 12:
-                    resolve(kOBCIChannelCmdGain_12);
-                    break;
-                case 24:
-                    resolve(kOBCIChannelCmdGain_24);
-                    break;
-                default:
-                    reject('Invalid gain setting of ' + gainSetting + ' tisk tisk, gain must be (1,2,4,6,8,12,24)');
-                    break;
-            }
-        });
-    },
+    commandForGain:commandForGain,
     OBCIChannelCmdLatch:kOBCIChannelCmdLatch,
     OBCIChannelCmdPowerOff:kOBCIChannelCmdPowerOff,
     OBCIChannelCmdPowerOn:kOBCIChannelCmdPowerOn,
@@ -519,39 +434,7 @@ module.exports = {
      * @returns {Promise}
      * Author: AJ Keller (@pushtheworldllc)
      */
-    commandForADCString:function(adcString) {
-        return new Promise(function(resolve,reject) {
-            switch (adcString) {
-                case kOBCIStringADCNormal:
-                    resolve(kOBCIChannelCmdADCNormal);
-                    break;
-                case kOBCIStringADCShorted:
-                    resolve(kOBCIChannelCmdADCShorted);
-                    break;
-                case kOBCIStringADCBiasMethod:
-                    resolve(kOBCIChannelCmdADCBiasMethod);
-                    break;
-                case kOBCIStringADCMvdd:
-                    resolve(kOBCIChannelCmdADCMVDD);
-                    break;
-                case kOBCIStringADCTemp:
-                    resolve(kOBCIChannelCmdADCTemp);
-                    break;
-                case kOBCIStringADCTestSig:
-                    resolve(kOBCIChannelCmdADCTestSig);
-                    break;
-                case kOBCIStringADCBiasDrp:
-                    resolve(kOBCIChannelCmdADCBiasDRP);
-                    break;
-                case kOBCIStringADCBiasDrn:
-                    resolve(kOBCIChannelCmdADCBiasDRN);
-                    break;
-                default:
-                    reject('Invalid ADC string');
-                    break;
-            }
-        });
-    },
+    commandForADCString:commandForADCString,
     /** Default Channel Settings */
     OBCIChannelDefaultAllSet:kOBCIChannelDefaultAllSet,
     OBCIChannelDefaultAllGet:kOBCIChannelDefaultAllGet,
@@ -696,24 +579,22 @@ function channelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
         if (!isBoolean(srb1)) { reject('srb2 must be of type \'boolean\' '); }
 
         // Set Channel Number
-        k.commandChannelForCmd(channelNumber).then(function(command) {
+        commandChannelForCmd(channelNumber).then(function(command) {
             cmdChannelNumber = command;
-        },function(err) {
-            reject(err);
         });
 
         // Set POWER_DOWN
         cmdPowerDown = powerDown ? kOBCIChannelCmdPowerOff : kOBCIChannelCmdPowerOn;
 
         // Set Gain
-        k.commandForGain(gain).then(function(command) {
+        commandForGain(gain).then(function(command) {
             cmdGain = command;
         },function(err) {
             reject(err);
         });
 
         // Set ADC string
-        k.commandForADCString(inputType).then(function(command) {
+        commandForADCString(inputType).then(function(command) {
             cmdInputType = command;
         },function(err) {
             reject(err);
@@ -728,7 +609,7 @@ function channelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
         // Set SRB1
         cmdSrb1 = srb1 ? kOBCIChannelCmdSRB1Connect : kOBCIChannelCmdSRB1Diconnect;
 
-        resolve([
+        var outputArray = [
             kOBCIChannelCmdSet,
             cmdChannelNumber,
             cmdPowerDown,
@@ -738,7 +619,9 @@ function channelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
             cmdSrb2,
             cmdSrb1,
             kOBCIChannelCmdLatch
-        ]);
+        ];
+        console.log(outputArray);
+        resolve(outputArray);
 
     });
 }
@@ -751,4 +634,127 @@ function isBoolean(input) {
 }
 function isString(input) {
     return (typeof input === 'string');
+}
+
+function commandForADCString(adcString) {
+    return new Promise(function(resolve,reject) {
+        switch (adcString) {
+            case kOBCIStringADCNormal:
+                resolve(kOBCIChannelCmdADCNormal);
+                break;
+            case kOBCIStringADCShorted:
+                resolve(kOBCIChannelCmdADCShorted);
+                break;
+            case kOBCIStringADCBiasMethod:
+                resolve(kOBCIChannelCmdADCBiasMethod);
+                break;
+            case kOBCIStringADCMvdd:
+                resolve(kOBCIChannelCmdADCMVDD);
+                break;
+            case kOBCIStringADCTemp:
+                resolve(kOBCIChannelCmdADCTemp);
+                break;
+            case kOBCIStringADCTestSig:
+                resolve(kOBCIChannelCmdADCTestSig);
+                break;
+            case kOBCIStringADCBiasDrp:
+                resolve(kOBCIChannelCmdADCBiasDRP);
+                break;
+            case kOBCIStringADCBiasDrn:
+                resolve(kOBCIChannelCmdADCBiasDRN);
+                break;
+            default:
+                reject('Invalid ADC string');
+                break;
+        }
+    });
+}
+
+function commandForGain(gainSetting) {
+    return new Promise(function(resolve,reject) {
+        switch (gainSetting) {
+            case 1:
+                resolve(kOBCIChannelCmdGain_1);
+                break;
+            case 2:
+                resolve(kOBCIChannelCmdGain_2);
+                break;
+            case 4:
+                resolve(kOBCIChannelCmdGain_4);
+                break;
+            case 6:
+                resolve(kOBCIChannelCmdGain_6);
+                break;
+            case 8:
+                resolve(kOBCIChannelCmdGain_8);
+                break;
+            case 12:
+                resolve(kOBCIChannelCmdGain_12);
+                break;
+            case 24:
+                resolve(kOBCIChannelCmdGain_24);
+                break;
+            default:
+                reject('Invalid gain setting of ' + gainSetting + ' tisk tisk, gain must be (1,2,4,6,8,12,24)');
+                break;
+        }
+    });
+}
+
+function commandChannelForCmd(channelNumber) {
+    return new Promise(function(resolve,reject) {
+        switch (channelNumber) {
+            case 1:
+                resolve(kOBCIChannelCmdChannel_1);
+                break;
+            case 2:
+                resolve(kOBCIChannelCmdChannel_2);
+                break;
+            case 3:
+                resolve(kOBCIChannelCmdChannel_3);
+                break;
+            case 4:
+                resolve(kOBCIChannelCmdChannel_4);
+                break;
+            case 5:
+                resolve(kOBCIChannelCmdChannel_5);
+                break;
+            case 6:
+                resolve(kOBCIChannelCmdChannel_6);
+                break;
+            case 7:
+                resolve(kOBCIChannelCmdChannel_7);
+                break;
+            case 8:
+                resolve(kOBCIChannelCmdChannel_8);
+                break;
+            case 9:
+                resolve(kOBCIChannelCmdChannel_9);
+                break;
+            case 10:
+                resolve(kOBCIChannelCmdChannel_10);
+                break;
+            case 11:
+                resolve(kOBCIChannelCmdChannel_11);
+                break;
+            case 12:
+                resolve(kOBCIChannelCmdChannel_12);
+                break;
+            case 13:
+                resolve(kOBCIChannelCmdChannel_13);
+                break;
+            case 14:
+                resolve(kOBCIChannelCmdChannel_14);
+                break;
+            case 15:
+                resolve(kOBCIChannelCmdChannel_15);
+                break;
+            case 16:
+                resolve(kOBCIChannelCmdChannel_16);
+                break;
+            default:
+                reject('Invalid channel number');
+                break;
+        }
+    });
 }

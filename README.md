@@ -4,7 +4,7 @@
 
 # openbci-sdk
 
-An NPM module for OpenBCI ~ written with love by Push The World
+An NPM module for OpenBCI ~ written with love by [Push The World!](www.pushtheworldllc.com)
 
 ## Working with the Module
 
@@ -37,11 +37,11 @@ ourBoard.connect(portName).then(function(boardSerial) {
 
 Sample properties:
 ------------------
-1. `startByte` (`Number`  should be `0xA0`)
-2. `sampleNumber` (a `Number` between 0-255) 
-3. `channelData` (channel data indexed starting at 1 [1,2,3,4,5,6,7,8] filled with floating point `Numbers`)
-4. `auxData` (aux data indexed starting at 0 [0,1,2] filled with floating point `Numbers`)
-5. `stopByte` (`Number` should be `0xC0`)
+* `startByte` (`Number`  should be `0xA0`)
+* `sampleNumber` (a `Number` between 0-255) 
+* `channelData` (channel data indexed starting at 1 [1,2,3,4,5,6,7,8] filled with floating point `Numbers`)
+* `auxData` (aux data indexed starting at 0 [0,1,2] filled with floating point `Numbers`)
+* `stopByte` (`Number` should be `0xC0`)
 
 The power of this module is in using the sample emitter, to be provided with samples to do with as you wish.
 
