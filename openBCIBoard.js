@@ -484,24 +484,23 @@ function OpenBCIFactory() {
      * Author: AJ Keller (@pushtheworldllc)
      * @param callback -> returns (portname,ports)
      */
-    OpenBCIBoard.prototype.autoFindOpenBCIBoard = function(callback) {
+    OpenBCIBoard.prototype.autoFindOpenBCIBoard = function() {
         var macSerialPrefix = 'usbserial-D';
-        var self = this;
-        serialPort.list(function(err, ports) {
-            //console.log('Searching for ports...');
-            var foundPort = false;
-            ports.forEach(function (port) {
-                if (port.comName.search(macSerialPrefix) > 0) {
-                    self.portName = port.comName;
-                    //console.log('found');
-                    callback(port.comName,ports);
-                    foundPort = true;
+
+        var find = new Promise((res, rej) => {
+            serialPort.list((err, ports) => {
+                if(ports.some(port => {
+                    if(port.comName.includes(macSerialPrefix)) {
+                        this.portName = port.comName;
+                        return true;
+                    }
+                })) {
+                    res(this.connect(this.portName))
                 }
-            });
-            if(!foundPort) {
-                callback(null,ports);
-            }
+                else rej(null, ports)
+            })
         })
+        return find;
     };
 
     /**
