@@ -149,7 +149,7 @@ Board optional configurations.
 
 **Note, we have added support for either all lowercase OR camelcase of the options, use whichever style you prefer.**
 
-### .connect()
+### .connect (portName)
 
 The essential precursor method to be called initially to establish a serial connection to the OpenBCI board.
 
@@ -157,4 +157,66 @@ The essential precursor method to be called initially to establish a serial conn
 
 The system path of the OpenBCI board serial port to open. For example, `/dev/tty` on Mac/Linux or `COM1` on Windows.
 
-Returns a 
+**_Returns_** a promise, fulfilled by a successful serial connection to the board, containing the serial port object that was opened. The promise will be rejected at any time if the serial port has an 'error' or 'close' event emitted.
+
+### .disconnect()
+
+Closes the serial port opened by `.connect()`
+
+**_Returns_** a promise, fulfilled by a successful close of the serial port object, rejected otherwise.
+
+### .streamStart()
+
+Sends a start streaming command to the board. 
+
+**Note, You must have called and fulfilled `.connect()` AND observed a `'ready'` emitter before calling this method.**
+
+**_Returns_** a promise, fulfilled if the command was sent to the write queue.
+
+### .streamStop()
+
+Sends a stop streaming command to the board. 
+
+**Note, You must have called and fulfilled `.connect()` AND observed a `'ready'` emitter before calling this method.**
+
+**_Returns_** a promise, fulfilled if the command was sent to the write queue.
+
+### .write(data)
+
+Send commands to the board. Due to the OpenBCI board firmware, a 10ms spacing **must** be observed between every command sent to the board. This method handles the timing and spacing between characters by adding characters to a global write queue and pulling from it every 10ms.
+
+**_dataToWrite_** 
+
+Either a single character or an Array of characters
+
+**_Returns_** a promise, fulfilled if the board has been connected and `dataToWrite` has been added to the write queue
+
+**Example**
+
+Sends a single character command to the board.
+```js
+// ourBoard has fulfilled the promise on .connected() and 'ready' has been observed previously
+ourBoard.write('a');
+```
+
+Sends an array of bytes
+```js
+// ourBoard has fulfilled the promise on .connected() and 'ready' has been observed previously
+ourBoard.write(['x','0','1','0','0','0','0','0','0','X']);
+```
+
+Taking full advantage of the write queue. The following would be sent at t = 0, 10ms, 20ms, 30ms 
+```js
+ourBoard.write('t');
+ourBoard.write('a');
+ourBoard.write('c');
+ourBoard.write('o');
+```
+
+### .softReset()
+
+Sends a soft reset command to the board.
+
+**Note, this method must be sent to the board before you can start streaming. This triggers the initial 'ready' event emitter.**
+
+**_Returns_** a promise, fulfilled if the command was sent to the write queue.

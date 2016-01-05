@@ -128,7 +128,7 @@ function OpenBCIFactory() {
     };
 
     /**
-     * Purpose: Stops the stream and closes the serial port
+     * Purpose: Closes the serial port
      * @returns {Promise}
      * Author: AJ Keller (@pushtheworldllc)
      */
@@ -146,7 +146,7 @@ function OpenBCIFactory() {
 
 
     /**
-     * Purpose: Send a stop streaming command to the board.
+     * Purpose: Sends a start streaming command to the board.
      * @returns {Promise} indicating if the signal was able to be sent.
      * Note: You must have successfully connected to an OpenBCI board using the connect
      *           method. Just because the signal was able to be sent to the board, does not
@@ -160,7 +160,7 @@ function OpenBCIFactory() {
     };
 
     /**
-     * Purpose: Send a stop streaming command to the board.
+     * Purpose: Sends a stop streaming command to the board.
      * @returns {Promise} indicating if the signal was able to be sent.
      * Note: You must have successfully connected to an OpenBCI board using the connect
      *           method. Just because the signal was able to be sent to the board, does not
@@ -177,7 +177,9 @@ function OpenBCIFactory() {
     /**
      * Purpose: To be able to easily write to the board but ensure that we never send a commands
      *              with less than a 10ms spacing between sends. This uses an array and pops off
-     *              the entries untill there are none left.
+     *              the entries until there are none left.
+     * @param dataToWrite - Either a single character or an Array of characters
+     * @returns {Promise}
      * Author: AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype.write = function(dataToWrite) {
@@ -232,13 +234,14 @@ function OpenBCIFactory() {
      * Author: AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype.softReset = function() {
-        return self.write(k.OBCIMiscSoftReset);
+        return this.write(k.OBCIMiscSoftReset);
     };
 
     /**
      * Purpose: To get the specified channelSettings register data from printRegisterSettings call
      * @param channelNumber
      * @returns {Promise.<T>|*}
+     * Author: AJ Keller
      */
     OpenBCIBoard.prototype.getSettingsForChannel = function(channelNumber) {
         var self = this;
