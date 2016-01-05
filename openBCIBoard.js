@@ -487,20 +487,19 @@ function OpenBCIFactory() {
     OpenBCIBoard.prototype.autoFindOpenBCIBoard = function() {
         var macSerialPrefix = 'usbserial-D';
 
-        var find = new Promise((res, rej) => {
+        return new Promise((resolve, reject) => {
             serialPort.list((err, ports) => {
                 if(ports.some(port => {
-                    if(port.comName.includes(macSerialPrefix)) {
-                        this.portName = port.comName;
-                        return true;
-                    }
-                })) {
-                    res(this.connect(this.portName))
+                        if(port.comName.includes(macSerialPrefix)) {
+                            this.portName = port.comName;
+                            return true;
+                        }
+                    })) {
+                    resolve(this.portName);
                 }
-                else rej(null, ports)
+                else resolve(ports);
             })
         })
-        return find;
     };
 
     /**
