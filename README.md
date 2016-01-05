@@ -348,3 +348,13 @@ Prints the total number of bytes that were read in this session to the console.
 ### .debugSession()
 
 Calls all `.printPacketsBad()`, `.printPacketsRead()`, `.printBytesIn()`
+
+## Events
+
+### .on('ready', callback)
+
+### .on('sample', callback)
+
+### .on('query', callback)
+
+Emitted resulting in a call to `.getChannelSettings()` with the channelSettingsObject
