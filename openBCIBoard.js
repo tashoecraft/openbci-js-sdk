@@ -422,9 +422,8 @@ function OpenBCIFactory() {
      *              data coming in on the serial port. If you are familiar with the
      *              'serialport' package, then every time data is emitted, this function
      *              gets sent the input data.
-     *
+     * @param data - a buffer of unknown size
      * Author: AJ Keller (@pushtheworldllc)
-     * @param data
      */
     OpenBCIBoard.prototype.processBytes = function(data) {
         var self = this;
@@ -495,7 +494,7 @@ function OpenBCIFactory() {
                 if (port.comName.search(macSerialPrefix) > 0) {
                     self.portName = port.comName;
                     //console.log('found');
-                    callback(port.comName); //return the portname
+                    callback(port.comName,ports);
                     foundPort = true;
                 }
             });
@@ -511,9 +510,9 @@ function OpenBCIFactory() {
      *              the master buffer. Note that if you are not reading bytes from
      *              master buffer, you will lose them if you continue to call this
      *              method due to the overwrite nature of buffers
-     * Author: AJ Keller (@pushtheworldllc)
      * @param self
      * @param inputBuffer
+     * Author: AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype.bufMerger = function(self,inputBuffer) {
         // we do a try, catch, paradigm to prevent fatal crashes while trying to read from the buffer
@@ -661,6 +660,10 @@ function OpenBCIFactory() {
         self.printPacketsBad();
     };
 
+    /**
+     * Purpose: To pretty print the info recieved on a Misc Register Query (printRegisterSettings)
+     * @param channelSettingsObj
+     */
     OpenBCIBoard.prototype.debugPrintChannelSettings = function(channelSettingsObj) {
         console.log('-- Channel Settings Object --');
         var powerState = 'OFF';
@@ -671,6 +674,11 @@ function OpenBCIFactory() {
         console.log('-- END --');
     };
 
+    /**
+     * Purpose: Quickly determine if a channel is on or off from a channelSettingObject. Most likely from a getChannelSettings call.
+     * @param channelSettingsObject
+     * @returns {boolean}
+     */
     OpenBCIBoard.prototype.channelIsOnFromChannelSettingsObject = function(channelSettingsObject) {
         //console.log(channelSettingsObject.POWER_DOWN);
         if(channelSettingsObject.POWER_DOWN.toString().localeCompare('1')) {
@@ -679,12 +687,11 @@ function OpenBCIFactory() {
         return false;
     };
 
-    // TODO: boardCheckConnection (py: check_connection)
-    // TODO: boardReconnect (py: reconnect)
-    // TODO: boardTestAuto
+    // TODO: checkConnection (py: check_connection)
+    // TODO: reconnect (py: reconnect)
+    // TODO: testAuto
     // TODO: getNbAUXChannels
     // TODO: printIncomingText (py: print_incomming_text)
-    // TODO: printRegisterSettings (py: print)register_settings)
     // TODO: warn
 
     factory.OpenBCIBoard = OpenBCIBoard;

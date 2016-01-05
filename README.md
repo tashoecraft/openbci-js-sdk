@@ -317,7 +317,7 @@ Get the current sample rate.
 
 **_Returns_** a number, the current sample rate.
 
-### .numberOfChannels
+### .numberOfChannels()
 
 Get the current number of channels available to use. (i.e. 8 or 16).
 
@@ -325,4 +325,26 @@ Get the current number of channels available to use. (i.e. 8 or 16).
 
 **_Returns_** a number, the total number of available channels.
 
+### .autoFindOpenBCIBoard(callback)
 
+Automatically find an OpenBCI board. 
+
+**_callback (optional)_** 
+
+Called when an OpenBCI board is found `callback(portName,listOfPorts)` or when the method can't find an OpenBCI board `callback(null,listOfPorts)`. List of ports should be used to offer a list of ports for the user to pick from!
+
+### .printPacketsBad()
+
+Prints the total number of packets that were not able to be read in this session to the console.
+
+### .printPacketsRead()
+
+Prints the total number of packets that were read in this session to the console.
+
+### .printBytesIn()
+
+Prints the total number of bytes that were read in this session to the console.
+
+### .debugSession()
+
+Calls all `.printPacketsBad()`, `.printPacketsRead()`, `.printBytesIn()`
