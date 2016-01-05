@@ -579,26 +579,16 @@ function channelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
         if (!isBoolean(srb1)) { reject('srb2 must be of type \'boolean\' '); }
 
         // Set Channel Number
-        commandChannelForCmd(channelNumber).then(function(command) {
-            cmdChannelNumber = command;
-        });
+        var p1 = commandChannelForCmd(channelNumber);
 
         // Set POWER_DOWN
         cmdPowerDown = powerDown ? kOBCIChannelCmdPowerOff : kOBCIChannelCmdPowerOn;
 
         // Set Gain
-        commandForGain(gain).then(function(command) {
-            cmdGain = command;
-        },function(err) {
-            reject(err);
-        });
+        var p2 = commandForGain(gain);
 
         // Set ADC string
-        commandForADCString(inputType).then(function(command) {
-            cmdInputType = command;
-        },function(err) {
-            reject(err);
-        });
+        var p3 = commandForADCString(inputType);
 
         // Set BIAS
         cmdBias = bias ? kOBCIChannelCmdBiasInclude : kOBCIChannelCmdBiasRemove;
@@ -609,20 +599,21 @@ function channelSetter(channelNumber,powerDown,gain,inputType,bias,srb2,srb1) {
         // Set SRB1
         cmdSrb1 = srb1 ? kOBCIChannelCmdSRB1Connect : kOBCIChannelCmdSRB1Diconnect;
 
-        var outputArray = [
-            kOBCIChannelCmdSet,
-            cmdChannelNumber,
-            cmdPowerDown,
-            cmdGain,
-            cmdInputType,
-            cmdBias,
-            cmdSrb2,
-            cmdSrb1,
-            kOBCIChannelCmdLatch
-        ];
-        console.log(outputArray);
-        resolve(outputArray);
-
+        Promise.all([p1,p2,p3]).then(function(values) {
+            var outputArray = [
+                kOBCIChannelCmdSet,
+                values[0],
+                cmdPowerDown,
+                values[1],
+                values[2],
+                cmdBias,
+                cmdSrb2,
+                cmdSrb1,
+                kOBCIChannelCmdLatch
+            ];
+            //console.log(outputArray);
+            resolve(outputArray);
+        });
     });
 }
 

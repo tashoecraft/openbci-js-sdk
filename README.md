@@ -114,20 +114,6 @@ ourBoard.autoFindOpenBCIBoard(function(portName,ports) {
 });
 ```
 
-
-## Dev Notes
-Running
--------
-1. Plug usb module into serial port
-1. Turn OpenBCI device on
-1. Type `npm start` into the terminal in the project directory
-
-Testing
--------
-```
-npm test
-```
-
 Reference Guide
 ---------------
 ## Methods
@@ -293,6 +279,12 @@ Select to connect (`true`) all channels' N inputs to SRB1. This effects all pins
 
 **_Returns_** a promise fulfilled if proper commands sent to the write queue, rejects on bad input or no board.
 
+**Example**
+```js
+ourBoard.channelSet(2,false,24,'normal',true,true,false);
+// sends ['x','2','0','6','0','1','1','0','X'] to the command queue
+```
+
 ### .simulatorStart()
 
 To start simulating an OpenBCI board. 
@@ -358,3 +350,16 @@ Calls all `.printPacketsBad()`, `.printPacketsRead()`, `.printBytesIn()`
 ### .on('query', callback)
 
 Emitted resulting in a call to `.getChannelSettings()` with the channelSettingsObject
+
+## Dev Notes
+Running
+-------
+1. Plug usb module into serial port
+1. Turn OpenBCI device on
+1. Type `npm start` into the terminal in the project directory
+
+Testing
+-------
+```
+npm test
+```
