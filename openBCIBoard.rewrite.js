@@ -13,14 +13,14 @@ const Sntp = require('sntp');
 const _ = require('lodash');
 
 function OpenBCIFactory() {
-    const factory = this;
+    var factory = this;
 
     const _options = {
         boardType: k.OBCIBoardDefault,
-        simulate: true,
+        simulate: false,
         simulatorSampleRate: 250,
         baudrate: 115200,
-        berbose: false,
+        verbose: false,
         ntp: false
     };
 
@@ -52,8 +52,6 @@ function OpenBCIFactory() {
      * @constructor
      */
     function OpenBCIBoard(path, options, callback) {
-
-
         var args = Array.prototype.slice.call(arguments);
         callback = args.pop();
         if (typeof (callback) !== 'function') {
@@ -502,10 +500,54 @@ function OpenBCIFactory() {
         return this.options.boardType === k.OBCIBoardDaisy ? k.OBCINumberOfChannelsDaisy : k.OBCINumberOfChannelsDefault;
     };
 
+    /**
+     * @description Automatically find an OpenBCI board.
+     * Note: This method is used for convenience and should be used when trying to
+     *           connect to a board. If you find a case (i.e. a platform (linux,
+     *           windows...) that this does not work, please open an issue and
+     *           we will add support!
+     * @author AJ Keller (@pushtheworldllc) && Austin Shoecraft (tashoecraft)
+     * @returns {Promise} - Fulfilled with portName, rejected when can't find the board.
+     */
+    OpenBCIBoard.prototype.autoFindOpenBCIBoard = function() {
+        var macSerialPrefix = 'usbserial-D';
+        return new Promise((resolve, reject) => {
+            /* istanbul ignore else  */
+            if (this.options.simulate) {
+                this.portName = k.OBCISimulatorPortName;
+                if (this.options.verbose) console.log('auto found sim board');
+                resolve(k.OBCISimulatorPortName);
+            } else {
+                serialPort.list((err, ports) => {
+                    if(err) {
+                        if (this.options.verbose) console.log('serial port err');
+                        reject(err);
+                    }
+                    if(ports.some(port => {
+                            if(port.comName.includes(macSerialPrefix)) {
+                                this.portName = port.comName;
+                                return true;
+                            }
+                        })) {
+                        if (this.options.verbose) console.log('auto found board');
+                        resolve(this.portName);
+                    }
+                    else {
+                        if (this.options.verbose) console.log('could not find board');
+                        reject('Could not auto find board');
+                    }
+                });
+            }
+        })
+    };
+
+
+
     factory.OpenBCIBoard = OpenBCIBoard;
     factory.OpenBCISample = openBCISample;
 
 }
+util.inherits(OpenBCIFactory, EventEmitter);
 
 module.exports = new OpenBCIFactory();
 

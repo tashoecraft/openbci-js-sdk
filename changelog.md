@@ -3,7 +3,7 @@
 
 Breaking Chanegs
     * Data now emitted on `data` instead of `sample` 
-
+    * Removing simulatorEnable and simulatorDisable
 
 0.3.0
 -----

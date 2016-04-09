@@ -1013,7 +1013,6 @@ function OpenBCIFactory() {
      * @author AJ Keller (@pushtheworldllc)
      */
     OpenBCIBoard.prototype._processBytes = function(data) {
-        //console.log(data);
         var sizeOfData = data.byteLength;
         this.bytesIn += sizeOfData; // increment to keep track of how many bytes we are receiving
         if(this.isLookingForKeyInBuffer) { //in a reset state
