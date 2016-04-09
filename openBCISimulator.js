@@ -95,7 +95,7 @@ function OpenBCISimulatorFactory() {
                 break;
             case k.OBCISyncClockStart:
                 setTimeout(() => {
-                    if (this.options.verbose) console.log('Recieved sync command');
+                    if (this.options.verbose) console.log('Received sync command');
                     this._syncStart();
                 }, 10);
                 break;
@@ -169,7 +169,6 @@ function OpenBCISimulatorFactory() {
         console.log('Delta: ' + delta);
 
         this.time.start += delta;
-
 
 
         this.emit('data','Synced!' + '$$$');
