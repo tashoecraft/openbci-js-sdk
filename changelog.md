@@ -1,4 +1,12 @@
+0.4.0
+-----
+
+Breaking Chanegs
+    * Data now emitted on `data` instead of `sample` 
+
+
 0.3.0
+-----
 
 New Features
     * Test Signals with ADS1299 using `.testSignal()`
