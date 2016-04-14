@@ -19,7 +19,6 @@ describe('openBCIsdk', function() {
 
 
     describe("#constructor", function() {
-
         it('contructs with the correct default options', function() {
             ourBoard = new openBCIBoard.OpenBCIBoard(k.OBCISimulatorPortName);
             (ourBoard.options.boardType).should.equal('default');
@@ -28,59 +27,67 @@ describe('openBCIsdk', function() {
             (ourBoard.options.baudRate).should.equal(115200);
             (ourBoard.options.verbose).should.equal(false);
         })
-
     });
-
     describe('#open connection', function() {
         ourBoard = new openBCIBoard.OpenBCIBoard(k.OBCISimulatorPortName, {simulate: true});
         ourBoard.open();
 
         it('on open stream should be paused', function() {
             ourBoard.on('open', () => {
-                (this.paused).should.equal(true);
+                (ourBoard.paused).should.equal(true);
             })
         });
         it('on open stream should be readble', function() {
             ourBoard.on('open', () => {
-                (this.readable).should.equal(true);
+                (ourBoard.readable).should.equal(true);
             })
         });
         it('on open stream should be connected', function() {
             ourBoard.on('open', () => {
-                (this.connected).should.equal(true);
+                (ourBoard.connected).should.equal(true);
             })
         });
         it('on open stream should not be reading', function() {
             ourBoard.on('open', () => {
-                (this.reading).should.equal(false);
+                (ourBoard.reading).should.equal(false);
             })
         });
     });
-
-
+    describe('#pause/resume connection', function() {
+        ourBoard = new openBCIBoard.OpenBCIBoard(k.OBCISimulatorPortName, {simulate: true});
+        ourBoard.open();
+        it('should resume when paused', function() {
+            ourBoard.resume();
+            (ourBoard.paused).should.equal(false);
+        });
+        it('should pause when streaming', function() {
+            ourBoard.pause();
+            (ourBoard.paused).should.equal(true);
+        });
+    });
     describe('#close connection', function() {
         ourBoard = new openBCIBoard.OpenBCIBoard(k.OBCISimulatorPortName, {simulate: true});
         ourBoard.open();
         ourBoard.close();
 
-        it('on open stream should be paused', function() {
+        it('o closed stream should not be paused', function() {
             ourBoard.on('close', () => {
-                (this.paused).should.equal(false);
+                (ourBoard.paused).should.equal(false);
             })
         });
-        it('on open stream should be readble', function() {
+        it('o closed stream should not be readble', function() {
             ourBoard.on('open', () => {
-                (this.readable).should.equal(false);
+                (ourBoard.readable).should.equal(false);
             })
         });
-        it('on open stream should be connected', function() {
+        it('o closed stream should not be connected', function() {
             ourBoard.on('open', () => {
-                (this.connected).should.equal(false);
+                (ourBoard.connected).should.equal(false);
             })
         });
-        it('on open stream should not be reading', function() {
+        it('o closed stream should not be reading', function() {
             ourBoard.on('open', () => {
-                (this.reading).should.equal(false);
+                (ourBoard.reading).should.equal(false);
             })
         });
     })

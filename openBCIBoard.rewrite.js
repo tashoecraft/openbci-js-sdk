@@ -279,6 +279,7 @@ function OpenBCIFactory() {
 
         var writerFunction = () => {
             /* istanbul ignore else */
+            console.log(this.commandsToWrite);
             if (this.commandsToWrite > 0) {
                 var command = this.writeOutArray.shift();
                 this.commandsToWrite--;
