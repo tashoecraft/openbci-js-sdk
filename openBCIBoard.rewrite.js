@@ -169,15 +169,15 @@ function OpenBCIFactory() {
         var boardSerial;
         if (this.options.simulate || this.portName === k.OBCISimulatorPortName) {
             this.options.simulate = true;
-            if (this.options.verbose) console.log('using faux board ' + portName);
-            boardSerial = new openBCISimulator.OpenBCISimulator(portName, {
+            if (this.options.verbose) console.log('using faux board ' + this.pathName);
+            boardSerial = new openBCISimulator.OpenBCISimulator(this.pathName, {
                 verbose: this.options.verbose,
                 sampleRate: this.options.simulatorSampleRate
             });
         } else {
             /* istanbul ignore if */
-            if (this.options.verbose) console.log('using real board ' + portName);
-            boardSerial = new serialPort.SerialPort(portName, {
+            if (this.options.verbose) console.log('using real board ' + this.pathName);
+            boardSerial = new serialPort.SerialPort(this.pathName, {
                 baudRate: this.options.baudRate
             },(err) => {
                 if (err) this.emit('error',err);
@@ -227,7 +227,6 @@ function OpenBCIFactory() {
     };
 
 
-    // TODO: .close(): closes the connection to the board, emits `close`
     OpenBCIBoard.prototype.close = function() {
 
         var timeout = 0;
